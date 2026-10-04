@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Історія та Громадянська Освіта - 5 Клас</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF export (homework / reflection sheet) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                        heading: ['Comfortaa', 'cursive'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#3A86EF',
+                            purple: '#8338EC',
+                            pink: '#FF006E',
+                            orange: '#FB5607',
+                            yellow: '#FFBE0B',
+                            teal: '#2EC4B6',
+                            red: '#E71D36',
+                            lightBg: '#F8FAFC'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f1f5f9;
+        }
+        h1, h2, h3, .font-heading {
+            font-family: 'Comfortaa', cursive;
+        }
+        .slide-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Crossword cell styling */
+        .cw-cell {
+            width: 38px;
+            height: 38px;
+            text-transform: uppercase;
+            font-weight: 800;
+            font-size: 1rem;
+            text-align: center;
+            border: 2px solid #CBD5E1;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        @media (max-width: 400px) {
+            .cw-cell {
+                width: 30px;
+                height: 30px;
+                font-size: 0.85rem;
+            }
+        }
+        .cw-cell:focus {
+            outline: none;
+            border-color: #3A86EF;
+            box-shadow: 0 0 0 3px rgba(58, 134, 239, 0.3);
+            background-color: #EFF6FF;
+        }
+        .cw-cell.black {
+            background-color: #334155;
+            border-color: #334155;
+            cursor: not-allowed;
+        }
+        .cw-cell.correct {
+            background-color: #D1FAE5 !important;
+            border-color: #10B981 !important;
+            color: #065F46;
+        }
+        .cw-cell.incorrect {
+            background-color: #FEE2E2 !important;
+            border-color: #EF4444 !important;
+            color: #991B1B;
+        }
+
+        /* Required-field cue for the PDF form */
+        @keyframes shake-field {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+        .field-error {
+            border-color: #EF4444 !important;
+            animation: shake-field 0.4s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-brand-blue selection:text-white">
+
+    <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <!-- Title -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-blue text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-book-open text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold text-slate-800">Історія та Громадянська Освіта</h1>
+                    <p class="text-xs text-slate-500">5 клас • За підручником В. Кафки</p>
+                </div>
+            </div>
+
+            <!-- Timer & Sidebar Toggle -->
+            <div class="flex items-center space-x-4">
+                <!-- Interactive SVG Timer -->
+                <div class="flex items-center bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 shadow-inner">
+                    <button id="timerToggleBtn" onclick="toggleTimer()" class="text-brand-blue hover:text-blue-700 transition mr-2 focus:outline-none" title="Старт/Пауза (Пробіл)">
+                        <i id="timerIcon" class="fa-solid fa-circle-play text-xl"></i>
+                    </button>
+                    <div class="relative w-8 h-8 mr-2">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-slate-200" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path id="timerProgress" class="text-brand-blue transition-all duration-1000" stroke-dasharray="100, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                    </div>
+                    <span id="timerDisplay" class="font-mono font-bold text-sm text-slate-700">05:00</span>
+                    <button onclick="resetTimer()" class="text-slate-400 hover:text-slate-600 transition ml-2 text-xs" title="Скинути">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleSidebar()" class="md:hidden bg-slate-200 p-2 rounded-lg text-slate-600 hover:bg-slate-300">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col md:flex-row gap-6 p-4 md:py-6">
+
+        <!-- Navigation Sidebar -->
+        <aside id="sidebar" class="hidden md:block w-full md:w-64 bg-white rounded-2xl p-4 border border-slate-200 shadow-sm shrink-0 self-start">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-2">Слайди уроку</h3>
+            <nav class="space-y-1.5" id="slideNav">
+                <button onclick="goToSlide(0)" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold transition bg-brand-blue text-white shadow-sm">
+                    <span class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center text-xs">1</span>
+                    <span class="truncate">Що таке історія?</span>
+                </button>
+                <button onclick="goToSlide(1)" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                    <span class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-xs">2</span>
+                    <span class="truncate">Я та інші: Ідентичність</span>
+                </button>
+                <button onclick="goToSlide(2)" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                    <span class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-xs">3</span>
+                    <span class="truncate">Права та Обов'язки</span>
+                </button>
+                <button onclick="goToSlide(3)" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                    <span class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-xs">4</span>
+                    <span class="truncate">Йоганн Гутенберг</span>
+                </button>
+                <button onclick="goToSlide(4)" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                    <span class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-xs">5</span>
+                    <span class="truncate">Батьківщина та Глобалізація</span>
+                </button>
+                <button onclick="goToSlide(5)" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                    <span class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-xs">6</span>
+                    <span class="truncate">Кросворд «Людина»</span>
+                </button>
+                <button onclick="goToSlide(6)" class="nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                    <span class="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-xs">7</span>
+                    <span class="truncate">Бліц-тест та Рефлексія</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Slide Presentation View Container -->
+        <main class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 flex flex-col justify-between min-h-[580px]">
+            <div id="slidesContainer" class="flex-1">
+                
+                <!-- SLIDE 1: Що таке історія? -->
+                <section class="slide-content space-y-6">
+                    <div class="border-b border-slate-100 pb-4">
+                        <span class="text-xs font-bold text-brand-purple tracking-wider uppercase bg-purple-50 px-3 py-1 rounded-full">Урок 1 • Вступ</span>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">Що таке історія?</h2>
+                    </div>
+
+                    <!-- Prominent Highlight Definition -->
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-6 shadow-lg transform transition hover:scale-[1.01]">
+                        <div class="flex items-center space-x-4">
+                            <div class="p-3.5 bg-white/20 rounded-2xl">
+                                <i class="fa-solid fa-landmark text-3xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase tracking-widest text-blue-100 font-bold mb-1">Головне поняття</p>
+                                <p class="text-xl md:text-2xl font-extrabold leading-snug">Історія — це наука про минуле людства.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Starter Activity: Fill in the missing word -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center">
+                            <i class="fa-solid fa-pen-to-square text-brand-blue mr-2"></i> Інтерактивна вправа: Заповни пропуск
+                        </h3>
+                        
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-2 text-base font-semibold text-slate-700">
+                            <span>Історія — це наука про</span>
+                            <input id="s1_missing_word" type="text" placeholder="..." class="border-2 border-brand-blue/50 rounded-lg px-3 py-1 text-center font-bold text-brand-blue w-32 focus:outline-none focus:border-brand-blue">
+                            <span>людства.</span>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <button onclick="checkSlide1Fill()" class="bg-brand-blue text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-600 transition shadow-sm text-sm">
+                                Перевірити
+                            </button>
+                            <span id="s1_fill_feedback" class="text-sm font-semibold hidden"></span>
+                        </div>
+                    </div>
+
+                    <!-- Thought Starter Input -->
+                    <div class="bg-blue-50/60 border border-blue-200 rounded-2xl p-5 space-y-2">
+                        <h3 class="font-bold text-blue-900 text-base flex items-center">
+                            <i class="fa-solid fa-lightbulb text-amber-500 mr-2"></i> Подумай та дай відповідь:
+                        </h3>
+                        <p class="text-xs text-blue-800">Чому, на твою думку, сучасним людям важливо знати минуле?</p>
+                        <textarea placeholder="Напишіть свою думку тут..." class="w-full text-sm border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-brand-blue focus:outline-none h-20 bg-white"></textarea>
+                    </div>
+                </section>
+
+                <!-- SLIDE 2: Я та інші. Ідентичність, Гідність і Рівність -->
+                <section class="slide-content space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <span class="text-xs font-bold text-brand-orange tracking-wider uppercase bg-orange-50 px-3 py-1 rounded-full">Урок 2 • Людина і Суспільство</span>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">Я та інші: Ідентичність, Гідність і Рівність</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-blue-900 text-base mb-1"><i class="fa-solid fa-fingerprint text-brand-blue mr-2"></i>Ідентичність</h3>
+                            <p class="text-xs text-blue-800">Усвідомлення того, хто я є. Наш набір унікальних якостей, захоплень та соціальних ролей.</p>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-purple-900 text-base mb-1"><i class="fa-solid fa-crown text-brand-purple mr-2"></i>Гідність</h3>
+                            <p class="text-xs text-purple-800">Повага до самого себе та усвідомлення власної цінності просто тому, що ти — Людина.</p>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-emerald-900 text-base mb-1"><i class="fa-solid fa-scale-balanced text-brand-teal mr-2"></i>Рівність у правах</h3>
+                            <p class="text-xs text-emerald-800">Усі люди рівні у своїх правах та свободах незалежно від віку, мови чи походження.</p>
+                        </div>
+                    </div>
+
+                    <!-- Identity Builder Activity -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
+                        <h3 class="font-bold text-slate-800 text-base">Вправа «Мій портрет ідентичності»</h3>
+                        <p class="text-xs text-slate-600">Обери значки, які описують саме тебе:</p>
+
+                        <div class="flex flex-wrap gap-2" id="badgeContainer">
+                            <button onclick="toggleBadge(this)" class="badge-btn px-3.5 py-2 bg-white border border-slate-300 rounded-full text-xs font-semibold text-slate-700 hover:border-brand-blue transition">🎓 Учень / Учениця</button>
+                            <button onclick="toggleBadge(this)" class="badge-btn px-3.5 py-2 bg-white border border-slate-300 rounded-full text-xs font-semibold text-slate-700 hover:border-brand-blue transition">🇺🇦 Українець / Українка</button>
+                            <button onclick="toggleBadge(this)" class="badge-btn px-3.5 py-2 bg-white border border-slate-300 rounded-full text-xs font-semibold text-slate-700 hover:border-brand-blue transition">📚 Книголюб</button>
+                            <button onclick="toggleBadge(this)" class="badge-btn px-3.5 py-2 bg-white border border-slate-300 rounded-full text-xs font-semibold text-slate-700 hover:border-brand-blue transition">⚽ Спортсмен / Спортсменка</button>
+                            <button onclick="toggleBadge(this)" class="badge-btn px-3.5 py-2 bg-white border border-slate-300 rounded-full text-xs font-semibold text-slate-700 hover:border-brand-blue transition">🤝 Вірний друг</button>
+                            <button onclick="toggleBadge(this)" class="badge-btn px-3.5 py-2 bg-white border border-slate-300 rounded-full text-xs font-semibold text-slate-700 hover:border-brand-blue transition">🎨 Митець</button>
+                        </div>
+
+                        <div class="flex items-center space-x-3 pt-2">
+                            <input id="customTrait" type="text" placeholder="Додай свою рису..." class="flex-1 text-xs border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none">
+                            <button onclick="savePortrait()" class="bg-brand-purple text-white px-4 py-2.5 rounded-xl font-bold hover:bg-purple-700 transition text-xs">Зберегти портрет</button>
+                        </div>
+                        <div id="portraitOutput" class="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 hidden font-bold"></div>
+                    </div>
+                </section>
+
+                <!-- SLIDE 3: Права та обов'язки дитини -->
+                <section class="slide-content space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <span class="text-xs font-bold text-brand-teal tracking-wider uppercase bg-teal-50 px-3 py-1 rounded-full">Урок 3 • Гражданство</span>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">Права та обов'язки дитини</h2>
+                    </div>
+
+                    <p class="text-xs text-slate-600">Кожне право супроводжується обов'язком. З'єднайте кожне право дитини із відповідним обов'язком:</p>
+
+                    <!-- Matching Activity -->
+                    <div class="space-y-3">
+                        <div class="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div class="w-full sm:w-1/2 font-semibold text-xs text-slate-800 bg-white p-2.5 rounded-lg border border-slate-200 flex items-center">
+                                <i class="fa-solid fa-graduation-cap text-brand-blue mr-2"></i> Право на освіту
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-slate-400 hidden sm:block text-xs"></i>
+                            <select id="rights_m1" class="w-full sm:w-1/2 text-xs border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none">
+                                <option value="">Оберіть обов'язок...</option>
+                                <option value="1">Сумлінно навчатися та поважати вчителів</option>
+                                <option value="2">Дбати про власне здоров'я та гігієну</option>
+                                <option value="3">Поважати думку інших та не ображати слово</option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div class="w-full sm:w-1/2 font-semibold text-xs text-slate-800 bg-white p-2.5 rounded-lg border border-slate-200 flex items-center">
+                                <i class="fa-solid fa-heart-pulse text-brand-red mr-2"></i> Право на охорону здоров'я
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-slate-400 hidden sm:block text-xs"></i>
+                            <select id="rights_m2" class="w-full sm:w-1/2 text-xs border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none">
+                                <option value="">Оберіть обов'язок...</option>
+                                <option value="1">Сумлінно навчатися та поважати вчителів</option>
+                                <option value="2">Дбати про власне здоров'я та гігієну</option>
+                                <option value="3">Поважати думку інших та не ображати слово</option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div class="w-full sm:w-1/2 font-semibold text-xs text-slate-800 bg-white p-2.5 rounded-lg border border-slate-200 flex items-center">
+                                <i class="fa-solid fa-comments text-brand-purple mr-2"></i> Право на власну думку
+                            </div>
+                            <i class="fa-solid fa-arrow-right text-slate-400 hidden sm:block text-xs"></i>
+                            <select id="rights_m3" class="w-full sm:w-1/2 text-xs border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none">
+                                <option value="">Оберіть обов'язок...</option>
+                                <option value="1">Сумлінно навчатися та поважати вчителів</option>
+                                <option value="2">Дбати про власне здоров'я та гігієну</option>
+                                <option value="3">Поважати думку інших та не ображати слово</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <button onclick="checkSlide3()" class="bg-brand-teal text-white px-5 py-2.5 rounded-xl font-bold hover:bg-teal-600 transition text-xs">
+                            Перевірити зв'язки
+                        </button>
+                        <span id="s3_feedback" class="text-xs font-semibold hidden"></span>
+                    </div>
+                </section>
+
+                <!-- SLIDE 4: Йоганн Гутенберг та друкарський верстат -->
+                <section class="slide-content space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <span class="text-xs font-bold text-brand-blue tracking-wider uppercase bg-blue-50 px-3 py-1 rounded-full">Урок 4 • Інформаційна революція</span>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">Йоганн Гутенберг</h2>
+                    </div>
+
+                    <!-- Highlight Gutenberg Key Task -->
+                    <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 shadow-sm">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center text-2xl font-bold shrink-0">
+                                <i class="fa-solid fa-print"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-amber-900">Історична подія XV століття:</h3>
+                                <p class="text-lg font-extrabold text-amber-900 mt-1">
+                                    Йоганн Гутенберг винайшов <span class="underline decoration-amber-500">друкарський верстат</span>!
+                                </p>
+                                <p class="text-xs text-amber-800 mt-1">Це відкриття дозволило швидко розповсюджувати знання та друкувати книги для мільйонів людей.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Gutenberg Quiz Task -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm">Завдання: Перевірте свої знання про Гутенберга</h3>
+                        <p class="text-xs text-slate-600">Оберіть правильний винахід Йоганна Гутенберга:</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="gutenbergOptions">
+                            <button onclick="checkGutenberg(this, false)" class="p-3 bg-white border border-slate-200 rounded-xl text-left hover:border-brand-blue transition font-semibold text-xs flex items-center space-x-3">
+                                <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">A</span>
+                                <span>Компас для плавання</span>
+                            </button>
+                            <button onclick="checkGutenberg(this, true)" class="p-3 bg-white border border-slate-200 rounded-xl text-left hover:border-brand-blue transition font-semibold text-xs flex items-center space-x-3">
+                                <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-bold">Б</span>
+                                <span class="font-bold">Друкарський верстат</span>
+                            </button>
+                            <button onclick="checkGutenberg(this, false)" class="p-3 bg-white border border-slate-200 rounded-xl text-left hover:border-brand-blue transition font-semibold text-xs flex items-center space-x-3">
+                                <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">В</span>
+                                <span>Паровий двигун</span>
+                            </button>
+                            <button onclick="checkGutenberg(this, false)" class="p-3 bg-white border border-slate-200 rounded-xl text-left hover:border-brand-blue transition font-semibold text-xs flex items-center space-x-3">
+                                <span class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">Г</span>
+                                <span>Телескоп</span>
+                            </button>
+                        </div>
+                        <div id="gutenbergFeedback" class="p-3 rounded-xl text-xs hidden font-bold"></div>
+                    </div>
+                </section>
+
+                <!-- SLIDE 5: Мала і Велика Батьківщина. Громада та Глобалізація -->
+                <section class="slide-content space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <span class="text-xs font-bold text-brand-orange tracking-wider uppercase bg-orange-50 px-3 py-1 rounded-full">Урок 5 • Спільноти</span>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">Мала і Велика Батьківщина. Глобалізація</h2>
+                    </div>
+
+                    <!-- Explanations Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-amber-900 text-sm mb-1"><i class="fa-solid fa-house-chimney text-amber-600 mr-2"></i>Мала Батьківщина</h3>
+                            <p class="text-xs text-amber-800">Рідне місто, село, вулиця, будинок, де ви народилися та зросли.</p>
+                        </div>
+                        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-blue-900 text-sm mb-1"><i class="fa-solid fa-flag text-brand-blue mr-2"></i>Велика Батьківщина</h3>
+                            <p class="text-xs text-blue-800">Наша суверенна та єдина держава — Україна.</p>
+                        </div>
+                        <div class="bg-teal-50 border border-teal-200 rounded-2xl p-4">
+                            <h3 class="font-bold text-teal-900 text-sm mb-1"><i class="fa-solid fa-globe text-brand-teal mr-2"></i>Глобалізація</h3>
+                            <p class="text-xs text-teal-800">Процес об'єднання всього людства у єдину світову спільноту.</p>
+                        </div>
+                    </div>
+
+                    <!-- Sorting Activity -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-sm">Інтерактивна вправа: Розподіли приклади</h3>
+                        <p class="text-xs text-slate-600">Визначте, до якого рівня належить кожен приклад:</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div class="flex flex-col sm:flex-row items-center justify-between bg-white p-3 rounded-xl border border-slate-200 gap-2">
+                                <span>🏡 Мій рідний шкільний двір та вулиця</span>
+                                <select id="homeland_s1" class="border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-blue">
+                                    <option value="">Оберіть...</option>
+                                    <option value="мала">Мала Батьківщина</option>
+                                    <option value="велика">Велика Батьківщина (Україна)</option>
+                                    <option value="світ">Глобальна спільнота</option>
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-center justify-between bg-white p-3 rounded-xl border border-slate-200 gap-2">
+                                <span>🇺🇦 Державні символи: Гімн, Прапор, Герб</span>
+                                <select id="homeland_s2" class="border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-blue">
+                                    <option value="">Оберіть...</option>
+                                    <option value="мала">Мала Батьківщина</option>
+                                    <option value="велика">Велика Батьківщина (Україна)</option>
+                                    <option value="світ">Глобальна спільнота</option>
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-center justify-between bg-white p-3 rounded-xl border border-slate-200 gap-2">
+                                <span>🌐 Інтернет та міжнародне спілкування</span>
+                                <select id="homeland_s3" class="border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-brand-blue">
+                                    <option value="">Оберіть...</option>
+                                    <option value="мала">Мала Батьківщина</option>
+                                    <option value="велика">Велика Батьківщина (Україна)</option>
+                                    <option value="світ">Глобальна спільнота</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3 pt-2">
+                            <button onclick="checkHomelandSort()" class="bg-brand-orange text-white px-5 py-2.5 rounded-xl font-bold hover:bg-orange-600 transition text-xs">
+                                Перевірити розподіл
+                            </button>
+                            <span id="homeland_feedback" class="text-xs font-semibold hidden"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SLIDE 6: Інтерактивний Кросворд «Людина і суспільство» -->
+                <section class="slide-content space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold text-brand-purple tracking-wider uppercase bg-purple-50 px-3 py-1 rounded-full">Урок 6 • Кросворд</span>
+                            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">Кросворд «Людина і суспільство»</h2>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <!-- Crossword Grid 5x8 -->
+                        <div class="lg:col-span-6 flex flex-col items-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                            <div id="crosswordGrid" class="grid grid-cols-8 gap-1.5">
+                                <!-- Generated dynamically by JS -->
+                            </div>
+
+                            <div class="flex space-x-2 mt-4">
+                                <button onclick="checkCrossword()" class="bg-brand-purple text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-purple-700 transition shadow-sm">
+                                    <i class="fa-solid fa-check mr-1"></i> Перевірити
+                                </button>
+                                <button onclick="clearCrossword()" class="bg-slate-200 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs hover:bg-slate-300 transition">
+                                    Скинути
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Clues (STRICTLY WITHOUT answers in parentheses) -->
+                        <div class="lg:col-span-6 space-y-3 bg-white p-4 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-800 text-sm border-b pb-2">Питання до кросворду:</h3>
+                            <ol class="space-y-2 text-xs text-slate-700">
+                                <li class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                    <span class="font-bold text-brand-blue">1. (Рядок 1)</span> Повага до самого себе та усвідомлення власної цінності.
+                                </li>
+                                <li class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                    <span class="font-bold text-brand-purple">2. (Рядок 2)</span> Те, що дозволено й гарантовано кожній людині від народження.
+                                </li>
+                                <li class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                    <span class="font-bold text-brand-orange">3. (Рядок 3)</span> Група людей, об'єднаних спільними цілями та життям.
+                                </li>
+                                <li class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                    <span class="font-bold text-brand-teal">4. (Рядок 4)</span> Наука про минуле людства.
+                                </li>
+                                <li class="p-2 rounded-lg bg-slate-50 border border-slate-100">
+                                    <span class="font-bold text-brand-red">5. (Рядок 5)</span> Наша рідна держава, вітчизна.
+                                </li>
+                            </ol>
+                            <div id="cwStatus" class="text-xs font-bold pt-2"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SLIDE 7: Бліц-тест та Рефлексія -->
+                <section class="slide-content space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <span class="text-xs font-bold text-brand-red tracking-wider uppercase bg-red-50 px-3 py-1 rounded-full">Урок 7 • Підсумок</span>
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mt-2">Бліц-тест та Рефлексія</h2>
+                    </div>
+
+                    <!-- Student info (used for the saved PDF) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 mb-1 block">Ім'я та прізвище</label>
+                            <input id="studentName" type="text" placeholder="Напр. Іван Іванов" class="w-full text-xs border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 mb-1 block">Клас</label>
+                            <input id="studentClass" type="text" placeholder="Напр. 5-А" class="w-full text-xs border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none bg-white">
+                        </div>
+                    </div>
+
+                    <!-- Blitz Quiz (3 Questions) -->
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-slate-800 text-sm">Підсумковий бліц-тест:</h3>
+                        
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                            <p class="text-xs font-bold text-slate-800">1. Що вивчає наука історія?</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="answerBlitz(1, true, this)" class="blitz-1 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Минуле людства</button>
+                                <button onclick="answerBlitz(1, false, this)" class="blitz-1 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Рослинний світ</button>
+                                <button onclick="answerBlitz(1, false, this)" class="blitz-1 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Зорі та галактики</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                            <p class="text-xs font-bold text-slate-800">2. Хто винайшов друкарський верстат у XV столітті?</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="answerBlitz(2, false, this)" class="blitz-2 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Геродот</button>
+                                <button onclick="answerBlitz(2, true, this)" class="blitz-2 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Йоганн Гутенберг</button>
+                                <button onclick="answerBlitz(2, false, this)" class="blitz-2 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Архимед</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                            <p class="text-xs font-bold text-slate-800">3. Рідне місто або село, де ви народилися — це:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="answerBlitz(3, true, this)" class="blitz-3 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Мала Батьківщина</button>
+                                <button onclick="answerBlitz(3, false, this)" class="blitz-3 px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700 hover:border-brand-blue">Глобалізація</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emotional Reflection -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                        <h3 class="font-bold text-slate-800 text-xs">Твоя самооцінка уроку:</h3>
+                        <div class="flex space-x-3">
+                            <button onclick="selectEmoji(this, '😊 Все зрозуміло!')" class="emoji-btn text-2xl p-2.5 bg-white rounded-2xl border border-slate-200 hover:scale-110 transition shadow-sm">😊</button>
+                            <button onclick="selectEmoji(this, '😐 Є запитання')" class="emoji-btn text-2xl p-2.5 bg-white rounded-2xl border border-slate-200 hover:scale-110 transition shadow-sm">😐</button>
+                            <button onclick="selectEmoji(this, '🤔 Складно')" class="emoji-btn text-2xl p-2.5 bg-white rounded-2xl border border-slate-200 hover:scale-110 transition shadow-sm">🤔</button>
+                        </div>
+                        <div id="emojiFeedback" class="text-xs font-bold text-brand-purple hidden"></div>
+                        
+                        <textarea id="reflectionText" placeholder="Напишіть враження про урок..." class="w-full text-xs border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-blue focus:outline-none h-16 bg-white"></textarea>
+                    </div>
+
+                    <!-- Save as PDF -->
+                    <div class="flex flex-col items-center gap-2 pt-2">
+                        <button id="savePdfBtn" type="button" onclick="savePDF()" class="bg-brand-red text-white px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-red-700 transition shadow-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            <span>Зберегти в PDF</span>
+                        </button>
+                        <div id="pdfStatus" class="text-xs font-semibold text-slate-500"></div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Navigation Footer -->
+            <div class="border-t border-slate-100 pt-4 mt-6 flex justify-between items-center">
+                <button id="prevBtn" onclick="changeSlide(-1)" class="px-5 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 transition text-xs flex items-center space-x-2">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                    <span>Назад</span>
+                </button>
+
+                <div class="text-xs font-bold text-slate-400">
+                    Слайд <span id="currentSlideNum" class="text-slate-800">1</span> з <span id="totalSlidesNum">7</span>
+                </div>
+
+                <button id="nextBtn" onclick="changeSlide(1)" class="px-5 py-2.5 rounded-xl bg-brand-blue text-white font-bold hover:bg-blue-600 transition text-xs flex items-center space-x-2 shadow-sm">
+                    <span>Далі</span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden template used to render the PDF (html2canvas needs it visible/positioned, not display:none) -->
+    <div id="pdfTemplate" style="position:fixed; left:-10000px; top:0; width:794px; background:#ffffff !important; padding:40px; font-family:'Nunito', sans-serif;">
+        <div style="border-bottom:3px solid #3A86EF !important; padding-bottom:16px; margin-bottom:20px;">
+            <h1 style="font-family:'Comfortaa', cursive; font-size:22px; color:#1e293b !important; margin:0 0 4px 0;">Історія та Громадянська Освіта — 5 клас</h1>
+            <p style="font-size:12px; color:#475569 !important; margin:0;">Підсумковий аркуш уроку «Людина і суспільство»</p>
+        </div>
+
+        <table style="width:100%; font-size:13px; color:#1e293b !important; margin-bottom:20px;">
+            <tr>
+                <td style="padding:4px 0; font-weight:bold; width:30%;">Ім'я та прізвище:</td>
+                <td id="pdfName" style="padding:4px 0;">—</td>
+            </tr>
+            <tr>
+                <td style="padding:4px 0; font-weight:bold;">Клас:</td>
+                <td id="pdfClass" style="padding:4px 0;">—</td>
+            </tr>
+            <tr>
+                <td style="padding:4px 0; font-weight:bold;">Дата:</td>
+                <td id="pdfDate" style="padding:4px 0;">—</td>
+            </tr>
+        </table>
+
+        <h2 style="font-family:'Comfortaa', cursive; font-size:15px; color:#3A86EF !important; margin:0 0 8px 0;">Кросворд «Людина і суспільство»</h2>
+        <p id="pdfCrossword" style="font-size:13px; color:#1e293b !important; margin:0 0 18px 0;">—</p>
+
+        <h2 style="font-family:'Comfortaa', cursive; font-size:15px; color:#FB5607 !important; margin:0 0 8px 0;">Підсумковий бліц-тест</h2>
+        <p id="pdfBlitz" style="font-size:13px; color:#1e293b !important; margin:0 0 18px 0; white-space:pre-line;">—</p>
+
+        <h2 style="font-family:'Comfortaa', cursive; font-size:15px; color:#8338EC !important; margin:0 0 8px 0;">Самооцінка уроку</h2>
+        <p id="pdfEmoji" style="font-size:13px; color:#1e293b !important; margin:0 0 18px 0;">—</p>
+
+        <h2 style="font-family:'Comfortaa', cursive; font-size:15px; color:#2EC4B6 !important; margin:0 0 8px 0;">Враження про урок</h2>
+        <p id="pdfReflection" style="font-size:13px; color:#1e293b !important; margin:0; border:1px solid #CBD5E1 !important; border-radius:8px; padding:10px; min-height:60px;">—</p>
+    </div>
+
+    <script>
+        // Presentation State
+        let currentSlide = 0;
+        const totalSlides = 7;
+
+        // State collected for the "Зберегти в PDF" summary sheet
+        const pdfState = {
+            crossword: null,   // e.g. "27 з 30 літер"
+            blitzAnswers: {},  // {1: {text, correct}, 2: {...}, 3: {...}}
+            emoji: null        // e.g. "😊 Все зрозуміло!"
+        };
+
+        // Crossword solutions (5 rows x 8 columns — sized to fit the longest word, ГІДНІСТЬ)
+        // 1. ГІДНІСТЬ (8) — повага до самого себе
+        // 2. ПРАВА    (5) — гарантовано кожній людині від народження
+        // 3. ГРОМАДА  (7) — група людей, об'єднаних спільними цілями
+        // 4. ІСТОРІЯ  (7) — наука про минуле людства
+        // 5. КРАЇНА   (6) — наша рідна держава
+
+        const cwData = [
+            ['Г','І','Д','Н','І','С','Т','Ь'],
+            ['П','Р','А','В','А','','',''],
+            ['Г','Р','О','М','А','Д','А',''],
+            ['І','С','Т','О','Р','І','Я',''],
+            ['К','Р','А','Ї','Н','А','','']
+        ];
+
+        window.onload = function() {
+            buildCrosswordGrid();
+            updateSlideUI();
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.key === 'ArrowRight') changeSlide(1);
+                if (e.key === 'ArrowLeft') changeSlide(-1);
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleTimer();
+                }
+            });
+        };
+
+        // Navigation
+        function goToSlide(index) {
+            if (index < 0 || index >= totalSlides) return;
+            currentSlide = index;
+            updateSlideUI();
+        }
+
+        function changeSlide(direction) {
+            goToSlide(currentSlide + direction);
+        }
+
+        function updateSlideUI() {
+            const slides = document.querySelectorAll('.slide-content');
+            slides.forEach((slide, idx) => {
+                slide.classList.toggle('hidden', idx !== currentSlide);
+            });
+
+            document.getElementById('currentSlideNum').innerText = currentSlide + 1;
+
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('prevBtn').classList.toggle('opacity-50', currentSlide === 0);
+            
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            document.getElementById('nextBtn').classList.toggle('opacity-50', currentSlide === totalSlides - 1);
+
+            const navItems = document.querySelectorAll('#slideNav button');
+            navItems.forEach((btn, idx) => {
+                if (idx === currentSlide) {
+                    btn.className = "nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition bg-brand-blue text-white shadow-sm";
+                    btn.children[0].className = "w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center text-xs";
+                } else {
+                    btn.className = "nav-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-semibold text-slate-600 hover:bg-slate-100 transition";
+                    btn.children[0].className = "w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-xs";
+                }
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        // Slide 1 Verification
+        function checkSlide1Fill() {
+            const word = document.getElementById('s1_missing_word').value.trim().toLowerCase();
+            const fb = document.getElementById('s1_fill_feedback');
+            fb.classList.remove('hidden');
+
+            if (word === 'минуле' || word === 'минуле ') {
+                fb.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Відмінно! "минуле" — це правильне слово!';
+                fb.className = 'text-xs font-bold text-emerald-600';
+            } else {
+                fb.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i> Спробуй ще раз (Підказка: м _ _ _ _ е)';
+                fb.className = 'text-xs font-bold text-rose-600';
+            }
+        }
+
+        // Slide 2 Identity Badges
+        function toggleBadge(btn) {
+            btn.classList.toggle('bg-brand-blue');
+            btn.classList.toggle('text-white');
+            btn.classList.toggle('border-brand-blue');
+            btn.classList.toggle('bg-white');
+            btn.classList.toggle('text-slate-700');
+        }
+
+        function savePortrait() {
+            const selectedBadges = Array.from(document.querySelectorAll('.badge-btn.bg-brand-blue')).map(b => b.innerText);
+            const custom = document.getElementById('customTrait').value.trim();
+            const output = document.getElementById('portraitOutput');
+
+            let text = "Ваш портрет складено: " + (selectedBadges.length > 0 ? selectedBadges.join(', ') : "не обрано значків");
+            if (custom) text += " • Особиста риса: " + custom;
+
+            output.innerHTML = text;
+            output.classList.remove('hidden');
+        }
+
+        // Slide 3 Rights Verification
+        function checkSlide3() {
+            const m1 = document.getElementById('rights_m1').value;
+            const m2 = document.getElementById('rights_m2').value;
+            const m3 = document.getElementById('rights_m3').value;
+            const fb = document.getElementById('s3_feedback');
+
+            fb.classList.remove('hidden');
+
+            if (m1 === "1" && m2 === "2" && m3 === "3") {
+                fb.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Правильно! Права гармонійно поєднано з обов\'язками.';
+                fb.className = 'text-xs font-bold text-emerald-600';
+            } else {
+                fb.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i> Деякі пара утворено некоректно.';
+                fb.className = 'text-xs font-bold text-rose-600';
+            }
+        }
+
+        // Slide 4 Gutenberg Verification
+        function checkGutenberg(btn, isCorrect) {
+            const fb = document.getElementById('gutenbergFeedback');
+            fb.classList.remove('hidden');
+
+            if (isCorrect) {
+                btn.className = "p-3 bg-emerald-50 border-2 border-emerald-500 rounded-xl text-left font-semibold text-xs flex items-center space-x-3 text-emerald-900";
+                fb.innerHTML = 'Правильно! Йоганн Гутенберг створив друкарський верстат з рухомими літерами!';
+                fb.className = 'p-3 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold';
+            } else {
+                btn.className = "p-3 bg-rose-50 border-2 border-rose-400 rounded-xl text-left font-semibold text-xs flex items-center space-x-3 text-rose-900";
+                fb.innerHTML = 'Невірно. Гутенберг уславився як винахідник саме друкарського верстата!';
+                fb.className = 'p-3 bg-rose-100 text-rose-800 rounded-xl text-xs font-bold';
+            }
+        }
+
+        // Slide 5 Homeland Sorting
+        function checkHomelandSort() {
+            const h1 = document.getElementById('homeland_s1').value;
+            const h2 = document.getElementById('homeland_s2').value;
+            const h3 = document.getElementById('homeland_s3').value;
+            const fb = document.getElementById('homeland_feedback');
+
+            fb.classList.remove('hidden');
+
+            if (h1 === 'мала' && h2 === 'велика' && h3 === 'світ') {
+                fb.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Чудово! Всі рівні визначено точно!';
+                fb.className = 'text-xs font-bold text-emerald-600';
+            } else {
+                fb.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i> Перевірте правильність вибору.';
+                fb.className = 'text-xs font-bold text-rose-600';
+            }
+        }
+
+        // Slide 6 Crossword Engine
+        function buildCrosswordGrid() {
+            const gridContainer = document.getElementById('crosswordGrid');
+            gridContainer.innerHTML = '';
+
+            const numRows = cwData.length;
+            const numCols = cwData[0].length;
+
+            for (let r = 0; r < numRows; r++) {
+                for (let c = 0; c < numCols; c++) {
+                    const char = cwData[r][c];
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.maxLength = 1;
+                    input.dataset.row = r;
+                    input.dataset.col = c;
+
+                    if (char === '') {
+                        input.className = 'cw-cell black';
+                        input.disabled = true;
+                    } else {
+                        input.className = 'cw-cell bg-white text-slate-800';
+                        // Auto-advance input focus
+                        input.addEventListener('input', function() {
+                            if (this.value && c < numCols - 1 && cwData[r][c + 1] !== '') {
+                                const next = gridContainer.querySelector(`[data-row="${r}"][data-col="${c + 1}"]`);
+                                if (next) next.focus();
+                            }
+                        });
+                    }
+
+                    gridContainer.appendChild(input);
+                }
+            }
+        }
+
+        function checkCrossword() {
+            const inputs = document.querySelectorAll('#crosswordGrid input:not(.black)');
+            let correctCount = 0;
+            let total = inputs.length;
+
+            inputs.forEach(input => {
+                const r = input.dataset.row;
+                const c = input.dataset.col;
+                const expected = cwData[r][c].toUpperCase();
+                const actual = input.value.trim().toUpperCase();
+
+                if (actual === expected) {
+                    input.className = 'cw-cell correct';
+                    correctCount++;
+                } else {
+                    input.className = 'cw-cell incorrect';
+                }
+            });
+
+            const status = document.getElementById('cwStatus');
+            if (correctCount === total) {
+                status.innerHTML = '<span class="text-emerald-600">Вітаємо! Кросворд повністю відгадано правильно!</span>';
+            } else {
+                status.innerHTML = `<span class="text-rose-600">Відгадано ${correctCount} з ${total} літер.</span>`;
+            }
+            pdfState.crossword = `${correctCount} з ${total} літер відгадано правильно`;
+        }
+
+        function clearCrossword() {
+            const inputs = document.querySelectorAll('#crosswordGrid input:not(.black)');
+            inputs.forEach(input => {
+                input.value = '';
+                input.className = 'cw-cell bg-white text-slate-800';
+            });
+            document.getElementById('cwStatus').innerText = '';
+        }
+
+        // Slide 7 Blitz & Reflection
+        function answerBlitz(qNum, isCorrect, btn) {
+            const btns = document.querySelectorAll(`.blitz-${qNum}`);
+            btns.forEach(b => b.className = "px-3 py-1.5 bg-white border rounded-lg text-xs font-semibold text-slate-700");
+
+            if (isCorrect) {
+                btn.className = "px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm";
+            } else {
+                btn.className = "px-3 py-1.5 bg-rose-500 text-white rounded-lg text-xs font-semibold shadow-sm";
+            }
+            pdfState.blitzAnswers[qNum] = { text: btn.innerText.trim(), correct: isCorrect };
+        }
+
+        function selectEmoji(btn, text) {
+            document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('border-brand-purple', 'bg-purple-50'));
+            btn.classList.add('border-brand-purple', 'bg-purple-50');
+
+            const fb = document.getElementById('emojiFeedback');
+            fb.innerText = "Ваша оцінка: " + text;
+            fb.classList.remove('hidden');
+            pdfState.emoji = text;
+        }
+
+        // Global Interactive Timer Logic
+        let timerSeconds = 300;
+        let timerInterval = null;
+        let isTimerRunning = false;
+
+        function toggleTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                document.getElementById('timerIcon').className = "fa-solid fa-circle-play text-xl";
+            } else {
+                isTimerRunning = true;
+                document.getElementById('timerIcon').className = "fa-solid fa-circle-pause text-xl text-amber-500";
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        playChime();
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timerSeconds = 300;
+            document.getElementById('timerIcon').className = "fa-solid fa-circle-play text-xl";
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timerDisplay').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            const progress = (timerSeconds / 300) * 100;
+            document.getElementById('timerProgress').setAttribute('stroke-dasharray', `${progress}, 100`);
+        }
+
+        function playChime() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch(e) {}
+        }
+
+        // Save the results/reflection sheet as a PDF
+        async function savePDF() {
+            const nameInput = document.getElementById('studentName');
+            const classInput = document.getElementById('studentClass');
+            const name = nameInput.value.trim();
+            const klass = classInput.value.trim();
+            const statusEl = document.getElementById('pdfStatus');
+
+            let missing = false;
+            [nameInput, classInput].forEach(el => {
+                if (!el.value.trim()) {
+                    missing = true;
+                    el.classList.add('field-error');
+                    setTimeout(() => el.classList.remove('field-error'), 500);
+                }
+            });
+            if (missing) {
+                statusEl.textContent = 'Будь ласка, заповніть ім\'я та клас.';
+                statusEl.className = 'text-xs font-semibold text-rose-600';
+                return;
+            }
+
+            statusEl.textContent = 'Готуємо PDF...';
+            statusEl.className = 'text-xs font-semibold text-slate-500';
+
+            // Fill the hidden template
+            document.getElementById('pdfName').innerText = name;
+            document.getElementById('pdfClass').innerText = klass;
+            document.getElementById('pdfDate').innerText = new Date().toLocaleDateString('uk-UA');
+            document.getElementById('pdfCrossword').innerText = pdfState.crossword || 'Кросворд ще не перевірявся.';
+
+            const blitzLines = [1, 2, 3].map(n => {
+                const a = pdfState.blitzAnswers[n];
+                if (!a) return `Питання ${n}: без відповіді`;
+                return `Питання ${n}: ${a.text} ${a.correct ? '✓ правильно' : '✗ неправильно'}`;
+            });
+            document.getElementById('pdfBlitz').innerText = blitzLines.join('\n');
+            document.getElementById('pdfEmoji').innerText = pdfState.emoji || 'Оцінку ще не обрано.';
+            document.getElementById('pdfReflection').innerText =
+                document.getElementById('reflectionText').value.trim() || '—';
+
+            try {
+                const template = document.getElementById('pdfTemplate');
+                const canvas = await html2canvas(template, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    onclone: (clonedDoc) => {
+                        clonedDoc.querySelectorAll('#pdfTemplate, #pdfTemplate *').forEach(el => {
+                            el.style.color = el.style.color || '#1e293b';
+                        });
+                    }
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const safe = s => s.replace(/[^\p{L}\p{N}]+/gu, '_');
+                const filename = `Історія_5клас_Підсумок_${safe(name)}_${safe(klass)}.pdf`;
+                const pdfBlob = pdf.output('blob');
+
+                // Three-tier save
+                let saved = false;
+                try {
+                    if (window.claude && typeof window.claude.use === 'function') {
+                        const downloads = await window.claude.use('downloads', { capabilities: { downloads: true } });
+                        if (downloads && typeof downloads.save === 'function') {
+                            await downloads.save(pdfBlob, filename);
+                            saved = true;
+                        }
+                    }
+                } catch (e) { /* fall through to next tier */ }
+
+                if (!saved) {
+                    try {
+                        const url = URL.createObjectURL(pdfBlob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(url), 2000);
+                        saved = true;
+                    } catch (e) { /* fall through to error */ }
+                }
+
+                if (saved) {
+                    statusEl.textContent = 'PDF збережено!';
+                    statusEl.className = 'text-xs font-semibold text-emerald-600';
+                } else {
+                    throw new Error('no-save-path');
+                }
+            } catch (err) {
+                statusEl.textContent = 'Не вдалося зберегти PDF. Спробуйте ще раз або зробіть скриншот.';
+                statusEl.className = 'text-xs font-semibold text-rose-600';
+            }
+        }
+    </script>
+</body>
+</html>
