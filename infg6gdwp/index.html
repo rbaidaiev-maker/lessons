@@ -421,8 +421,8 @@ input[type=range]{width:100%;accent-color:var(--blue)}
 .hot.peek{background:rgba(251,188,4,.35);outline:3px solid #f29900;box-shadow:0 0 0 6px rgba(251,188,4,.55);animation:peek .7s ease-in-out 7 alternate;z-index:2!important}
 @keyframes peek{to{box-shadow:0 0 0 14px rgba(251,188,4,.15)}}
 .grid>*{min-width:0}
-.practice li{overflow-wrap:anywhere;counter-increment:p;display:flex;gap:10px;align-items:flex-start;padding:6px 0}
-.practice li::before{content:counter(p);flex:none;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.practice li{overflow-wrap:break-word;counter-increment:p;position:relative;padding:6px 0 6px 38px;line-height:1.5}
+.practice li::before{content:counter(p);position:absolute;left:0;top:5px;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
 @media (max-width:640px){
   .choice-row{grid-template-columns:1fr}
   .choice-row .chips{justify-content:flex-start}
