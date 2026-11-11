@@ -1,0 +1,770 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Дорога без ризику</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one slide on screen at a time, zebra-crossing band on top, road-sign plates as labels, fixed control bar at the bottom */
+:root{
+  --bg:#F2F3EF; --surface:#FFFFFF; --surface-2:#E8EBE6; --ink:#16202B; --muted:#56616E; --line:#D3D8DD;
+  --blue:#1D5FB4; --red:#C92A2A; --amber:#F2B705; --green:#1C8F52; --asphalt:#2A3037; --on-amber:#16202B; --on-dark:#F5F6F2; --on-blue:#FFFFFF;
+  --blue-soft:#E1EAF6; --red-soft:#F8E3E1; --green-soft:#DFF1E6; --amber-soft:#FCF1CC;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Golos Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151A; --surface:#1A2027; --surface-2:#232A33; --ink:#ECEFF2; --muted:#9BA6B2; --line:#2E3740;
+  --blue:#5E9CEB; --red:#F06262; --amber:#F5C433; --green:#3DC27F; --asphalt:#0A0D11; --on-amber:#16202B; --on-dark:#F5F6F2; --on-blue:#0E1620;
+  --blue-soft:#1A2A40; --red-soft:#3A1F22; --green-soft:#16322A; --amber-soft:#3A3217; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151A; --surface:#1A2027; --surface-2:#232A33; --ink:#ECEFF2; --muted:#9BA6B2; --line:#2E3740;
+  --blue:#5E9CEB; --red:#F06262; --amber:#F5C433; --green:#3DC27F; --asphalt:#0A0D11; --on-amber:#16202B; --on-dark:#F5F6F2; --on-blue:#0E1620;
+  --blue-soft:#1A2A40; --red-soft:#3A1F22; --green-soft:#16322A; --amber-soft:#3A3217; color-scheme:dark}
+
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;overflow:hidden}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h2{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);font-weight:700}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+
+.app{height:100%;display:flex;flex-direction:column}
+.zebra{height:14px;flex:none;background:repeating-linear-gradient(90deg,var(--asphalt) 0 28px,var(--on-dark) 28px 56px)}
+.stage{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
+.slide{max-width:1120px;margin:0 auto;padding-block:28px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px;animation:in .35s ease}
+@keyframes in{from{transform:translateY(8px)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.slide{animation:none}*{transition:none!important}}
+
+.plate{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;background:var(--blue);color:var(--on-blue);font-weight:600;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:6px;border:2px solid var(--surface);box-shadow:0 0 0 2px var(--blue)}
+.plate.red{background:var(--red);box-shadow:0 0 0 2px var(--red)}
+.plate.amber{background:var(--amber);color:var(--on-amber);box-shadow:0 0 0 2px var(--amber)}
+.plate.green{background:var(--green);box-shadow:0 0 0 2px var(--green)}
+.lead{font-size:1.12rem;color:var(--muted);max-width:62ch}
+.small{font-size:.85rem;color:var(--muted)}
+.src{font-size:.78rem;color:var(--muted)}
+.src a{color:var(--muted)}
+
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card p{color:var(--muted)}
+.btn{background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:600;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--blue)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+
+/* bottom bar */
+.bar{flex:none;display:flex;align-items:center;gap:10px;background:var(--surface);border-top:1px solid var(--line);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar .nav{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font-size:1.2rem;font-weight:700;display:grid;place-items:center}
+.bar .nav:disabled{opacity:.35;cursor:default}
+.dots{flex:1;display:flex;gap:4px;min-width:0;align-items:center}
+.dots button{flex:1;height:8px;border:0;border-radius:4px;background:var(--line);padding:0;min-width:4px}
+.dots button.done{background:var(--blue)}
+.dots button.cur{background:var(--amber)}
+.count{font-variant-numeric:tabular-nums;font-weight:600;color:var(--muted);min-width:52px;text-align:right}
+.notes-btn{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-weight:600;font-size:.85rem;white-space:nowrap}
+.notes-btn[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:var(--on-amber)}
+@media (max-width:560px){.notes-btn .long{display:none}}
+
+.notes{background:var(--amber-soft);border:2px dashed var(--amber);border-radius:var(--r);padding:14px 18px;font-size:.95rem}
+.notes b{display:block;font-family:var(--f-display);font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.notes ul{margin:0;padding-left:20px}
+
+/* title slide */
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:center;min-height:min(70vh,560px)}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(2.3rem,1.4rem + 4.5vw,4.6rem);font-weight:800;letter-spacing:-.01em}
+.hero h1 span{display:block;color:var(--blue)}
+.crossing{aspect-ratio:1/1;max-width:100%;border-radius:22px;background:var(--asphalt);position:relative;overflow:hidden}
+.crossing .stripes{position:absolute;inset:14% 0}
+.crossing .stripes{background:repeating-linear-gradient(0deg,var(--on-dark) 0 9%,transparent 9% 16%)}
+.crossing .sign{position:absolute;right:8%;top:8%;width:30%;aspect-ratio:1;background:var(--blue);border-radius:10px;border:4px solid #fff;display:grid;place-items:center}
+.crossing .sign svg{width:78%;height:78%}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.9rem;font-weight:500}
+
+/* poll */
+.poll{display:grid;gap:10px}
+.poll-row{display:grid;grid-template-columns:minmax(0,220px) 1fr auto;gap:12px;align-items:center}
+@media (max-width:560px){.poll-row{grid-template-columns:1fr auto}.poll-row .track{grid-column:1/-1;order:3}}
+.track{height:28px;background:var(--surface-2);border-radius:8px;overflow:hidden}
+.fill{height:100%;background:var(--blue);width:0;transition:width .3s}
+.poll-ctrl{display:flex;gap:6px;align-items:center}
+.poll-ctrl button{width:36px;height:36px;border-radius:8px;border:2px solid var(--line);background:var(--surface);font-weight:700}
+.poll-ctrl output{min-width:28px;text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
+
+/* big fact */
+.fact{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;background:var(--red-soft);border-radius:var(--r);padding:22px}
+.fact .num{font-family:var(--f-display);font-weight:800;font-size:clamp(3rem,2rem + 4vw,5.5rem);color:var(--red);line-height:1}
+@media (max-width:560px){.fact{grid-template-columns:1fr}}
+
+/* role cards */
+.reveal{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.reveal .ic{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:var(--on-blue)}
+.reveal .ic svg{width:30px;height:30px}
+.reveal .more{color:var(--muted);font-size:.95rem}
+.reveal[aria-expanded="false"] .more{display:none}
+.reveal .hint{font-size:.8rem;color:var(--blue);font-weight:600}
+.reveal[aria-expanded="true"] .hint{display:none}
+.reveal[aria-expanded="true"]{border-color:var(--blue)}
+
+/* steps */
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 16px 64px;position:relative;min-width:0}
+.steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:34px;height:34px;border-radius:50%;background:var(--amber);color:var(--on-amber);font-family:var(--f-display);font-weight:700;display:grid;place-items:center}
+.steps li b{display:block}
+.steps li span{color:var(--muted);font-size:.95rem}
+
+/* traffic light */
+.tl-wrap{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+@media (max-width:640px){.tl-wrap{grid-template-columns:1fr;justify-items:center}}
+.tl{background:var(--asphalt);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:14px;width:130px}
+.lamp{width:98px;height:98px;border-radius:50%;border:4px solid #000;display:grid;place-items:center;background:#3a3f45;opacity:.55;transition:opacity .2s,box-shadow .2s}
+.lamp svg{width:56px;height:56px}
+.lamp.r{background:#7a1f1f}.lamp.g{background:#15502f}
+.lamp.on{opacity:1}
+.lamp.r.on{background:#ff3b3b;box-shadow:0 0 34px #ff3b3b}
+.lamp.g.on{background:#2fe07a;box-shadow:0 0 34px #2fe07a}
+.lamp.blink{animation:blink .8s steps(1) infinite}
+@keyframes blink{50%{opacity:.25}}
+.tl-btns{display:flex;flex-wrap:wrap;gap:8px}
+.tl-out{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;min-height:150px;display:flex;flex-direction:column;gap:8px}
+.tl-out h3{font-size:1.3rem}
+
+/* flip cards */
+.flip{perspective:900px;border:0;background:none;padding:0;min-height:190px;text-align:left}
+.flip .in{position:relative;height:100%;min-height:190px;transition:transform .5s;transform-style:preserve-3d}
+.flip[aria-pressed="true"] .in{transform:rotateY(180deg)}
+.flip .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:8px;border:2px solid var(--line);background:var(--surface)}
+.flip .back{transform:rotateY(180deg);background:var(--green-soft);border-color:var(--green)}
+.flip .face .tag{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red)}
+.flip .back .tag{color:var(--green)}
+.flip .face p{color:var(--muted);font-size:.95rem}
+.flip .back p{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.flip .in{transition:none}}
+
+/* braking */
+.sim{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:18px}
+.controls{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end}
+.controls label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.9rem;min-width:0}
+.controls input[type=range]{width:min(320px,80vw);accent-color:var(--blue)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:2px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;font-weight:600;font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--blue);color:var(--on-blue);border-color:var(--blue)}
+.road{position:relative;height:96px;background:var(--asphalt);border-radius:10px;overflow:hidden}
+.road .mid{position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;background:repeating-linear-gradient(90deg,var(--on-dark) 0 22px,transparent 22px 40px);opacity:.6}
+.road .react{position:absolute;top:14px;bottom:14px;left:0;background:color-mix(in srgb,var(--amber) 55%,transparent);border-radius:4px 0 0 4px}
+.road .brake{position:absolute;top:14px;bottom:14px;background:color-mix(in srgb,var(--red) 60%,transparent)}
+.road .kid{position:absolute;top:8px;bottom:8px;width:4px;background:#fff}
+.road .kid span{position:absolute;top:-2px;left:8px;color:#fff;font-size:.75rem;font-weight:700;white-space:nowrap}
+.scale{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.verdict{border-radius:10px;padding:14px 16px;font-weight:600}
+.verdict.bad{background:var(--red-soft);color:var(--red)}
+.verdict.ok{background:var(--green-soft);color:var(--green)}
+.big-n{font-family:var(--f-display);font-weight:700;font-size:1.8rem;font-variant-numeric:tabular-nums}
+
+/* night */
+.night{background:#05070a;border-radius:var(--r);padding:20px;display:grid;gap:18px;color:#e9edf1}
+.night .lane{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
+@media (max-width:560px){.night .lane{grid-template-columns:1fr}}
+.night .beam{height:38px;border-radius:6px;background:linear-gradient(90deg,rgba(255,236,170,.75),rgba(255,236,170,0) 100%);position:relative;overflow:visible}
+.night .seen{position:absolute;top:-6px;bottom:-6px;width:6px;border-radius:3px;background:#ff5d5d;transition:left .9s ease}
+.night .lbl{font-weight:600}
+.night .val{font-family:var(--f-display);font-size:1.3rem;color:#ffd84d}
+.night .note{color:#aab4bf;font-size:.85rem}
+
+/* speed bars */
+.bars{display:grid;gap:10px}
+.brow{display:grid;grid-template-columns:minmax(0,200px) 1fr;gap:12px;align-items:center}
+@media (max-width:560px){.brow{grid-template-columns:1fr}}
+.brow .b{height:30px;border-radius:6px;background:var(--blue);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:#fff;font-weight:700;font-size:.85rem;min-width:56px;font-variant-numeric:tabular-nums}
+.brow .b.hot{background:var(--red)}
+
+/* rules boxes */
+.law{border-left:6px solid var(--blue);background:var(--blue-soft);border-radius:0 var(--r) var(--r) 0;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.law.local{border-color:var(--amber);background:var(--amber-soft)}
+.law ul{margin:0;padding-left:20px}
+.gold{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.gold div{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;min-width:0}
+.gold svg{flex:none;width:38px;height:38px}
+
+/* equip game */
+.equip{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.equip{grid-template-columns:1fr}}
+.pool{display:flex;flex-wrap:wrap;gap:10px}
+.item{border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;font-weight:600}
+.item.good{border-color:var(--green);background:var(--green-soft)}
+.item.bad{border-color:var(--red);background:var(--red-soft)}
+.zone{border:2px dashed var(--line);border-radius:var(--r);padding:14px;min-height:120px;display:flex;flex-direction:column;gap:10px}
+.zone h3{font-size:.95rem}
+.fb{min-height:52px;border-radius:10px;padding:12px 14px;background:var(--surface-2)}
+
+/* scenarios & quiz */
+.qbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:16px}
+.qtop{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.qtop .small{font-variant-numeric:tabular-nums}
+.qtext{font-size:1.25rem;font-weight:600;max-width:60ch}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 16px;font-weight:500}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt.right{border-color:var(--green);background:var(--green-soft)}
+.opt.wrong{border-color:var(--red);background:var(--red-soft)}
+.opt:disabled{cursor:default}
+.expl{border-radius:10px;padding:12px 16px;background:var(--surface-2)}
+.qnav{display:flex;gap:10px;flex-wrap:wrap}
+.score{font-family:var(--f-display);font-size:3rem;font-weight:800;color:var(--blue)}
+
+/* emergency */
+.sos{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.sos div{background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:4px}
+.sos b{font-family:var(--f-display);font-size:2.4rem;color:var(--red);line-height:1}
+
+/* promise */
+.promise{display:grid;gap:10px}
+.promise button{display:flex;gap:14px;align-items:center;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:12px 16px;font-weight:600}
+.promise .box{flex:none;width:28px;height:28px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;color:#fff}
+.promise button[aria-pressed="true"]{border-color:var(--green)}
+.promise button[aria-pressed="true"] .box{background:var(--green);border-color:var(--green)}
+.done-msg{font-family:var(--f-display);font-weight:700;color:var(--green)}
+</style>
+
+<div class="app">
+  <div class="zebra" aria-hidden="true"></div>
+  <main class="stage" id="stage">
+
+  <!-- 1 -->
+  <section class="slide" data-title="Початок">
+    <div class="hero">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <span class="plate">Тематична бесіда</span>
+        <h1>Дорога <span>без ризику</span></h1>
+        <p class="lead">Профілактика дитячого дорожньо-транспортного травматизму. Окремо говоримо про самокати та електросамокати.</p>
+        <div class="meta-row">
+          <span class="chip">Пішохід</span><span class="chip">Пасажир</span><span class="chip">Самокат</span><span class="chip">Електросамокат</span>
+        </div>
+        <p class="small">Гортайте стрілками ← → на клавіатурі або кнопками внизу.</p>
+      </div>
+      <div class="crossing" aria-hidden="true">
+        <div class="stripes"></div>
+        <div class="sign"><svg viewBox="0 0 100 100"><path d="M8 92 L50 8 L92 92 Z" fill="#fff"/><circle cx="52" cy="38" r="7" fill="#16202B"/><path d="M50 47 L44 66 L36 82 M48 58 L58 66 L62 82 M47 52 L36 58 M50 50 L62 56" stroke="#16202B" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M20 86 H80" stroke="#16202B" stroke-width="5" stroke-dasharray="7 5"/></svg></div>
+      </div>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Привітайтеся, попросіть увімкнути камери, якщо можливо.</li><li>Скажіть мету: за 30–40 хвилин розберемо, як не потрапити в біду на дорозі, і пограємо в кілька завдань.</li></ul></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" data-title="Розминка" hidden>
+    <span class="plate amber">Розминка</span>
+    <h2>Як ти зазвичай добираєшся до школи?</h2>
+    <p class="lead">Напишіть у чат цифру від 1 до 4. Учитель рахує відповіді кнопками «+».</p>
+    <div class="poll" id="poll"></div>
+    <div class="card"><h3>Друге питання в чат</h3><p>Чи бачив ти колись небезпечну ситуацію на дорозі? Опиши її одним реченням.</p></div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Прочитайте 2–3 історії з чату. Запитайте: «Що можна було зробити інакше?»</li><li>Якщо багато дітей їздять на самокатах, скажіть, що цьому присвячена окрема частина бесіди.</li></ul></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" data-title="Чому це важливо" hidden>
+    <span class="plate red">Київщина, 2026 рік</span>
+    <h2>Це відбувається поруч з нами</h2>
+    <div class="fact">
+      <div class="num">9 + 1</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <p style="font-weight:600;font-size:1.1rem">Лише за один тиждень травня на дорогах Київської області 9 дітей травмувалися, а одна дівчинка загинула.</p>
+        <p class="small">Київщина на третьому місці в Україні за кількістю травмованих у ДТП (січень–травень 2026). По всій країні за цей час загинули 52 дитини.</p>
+      </div>
+    </div>
+    <h3>Три випадки з Київщини лише за травень</h3>
+    <div class="grid g3">
+      <div class="card"><span class="small" style="font-weight:700;color:var(--red)">Гатне · 3 травня</span><h3>Двоє на одному електросамокаті</h3><p>Хлопчики 10 і 8 років на перехресті зіткнулися з автомобілем. Старший загинув, молодший у лікарні з численними травмами.</p></div>
+      <div class="card"><span class="small" style="font-weight:700;color:var(--red)">Ірпінь · 12 травня</span><h3>На пішохідному переході</h3><p>8-річна дівчинка переходила дорогу по «зебрі», тримаючи самокат. Її збив автомобіль, дитина загинула в лікарні.</p></div>
+      <div class="card"><span class="small" style="font-weight:700;color:var(--red)">Вишгородський район · 16 травня</span><h3>Виїзд на головну дорогу</h3><p>Сестри 11 і 13 років їхали удвох на самокаті, виїхали на головну дорогу й зіткнулися з авто. Обидві в лікарні.</p></div>
+    </div>
+    <p class="src">Джерела: поліція Київської області через <a href="https://glavcom.ua/kyiv/news/za-tizhden-devjat-poranenikh-ditej-ta-odna-zahibla-politsija-kijivshchini-opriljudnila-statistiku-dtp-1120254.html" target="_blank" rel="noopener">Главком, 18.05.2026</a> · <a href="https://suspilne.media/kyiv/1298825-na-kiivsini-avto-zbilo-elektrosamokat-iz-ditmi-zaginuv-10-ricnij-hlopcik/" target="_blank" rel="noopener">Суспільне Київ, 04.05.2026</a> · <a href="https://kyivschina24.com/news/kryvava-statystyka-za-5-misyacziv-u-dtp-v-ukrayini-zagynulo-911-lyudej-sered-zhertv-desyatky-ditej/" target="_blank" rel="noopener">Київщина24, 26.06.2026</a></p>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Говоріть спокійно, без залякування: мета не налякати, а показати, що правила рятують життя.</li><li>Запитайте: «Що спільного у двох випадках із трьох?» Відповідь: двоє дітей на одному самокаті.</li><li>Якщо хтось із дітей знав постраждалих, не розпитуйте деталі.</li></ul></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" data-title="Учасники руху" hidden>
+    <span class="plate">Хто є хто</span>
+    <h2>Учасники дорожнього руху</h2>
+    <p class="lead">Кожен з нас щодня буває в кількох ролях. Натисніть на картку, щоб побачити головне правило.</p>
+    <div class="grid g4" id="roles">
+      <button class="reveal" aria-expanded="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="13" cy="4" r="2"/><path d="M12 8l-2 6-3 6M12 11l4 3 1 6M11 9l-4 3"/></svg></span><h3>Пішохід</h3><span class="hint">Натисни →</span><span class="more">Іде тротуаром, переходить дорогу тільки по переходу або на зелений сигнал. Там, де тротуару немає, йде узбіччям назустріч машинам.</span></button>
+      <button class="reveal" aria-expanded="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 16V11l2-5h12l2 5v5M4 16h16M7 16v3M17 16v3"/><circle cx="8" cy="13" r="1"/><circle cx="16" cy="13" r="1"/></svg></span><h3>Пасажир</h3><span class="hint">Натисни →</span><span class="more">Пристебнутий пасок безпеки, не відволікає водія. Виходить лише після повної зупинки й з боку тротуару.</span></button>
+      <button class="reveal" aria-expanded="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M6 19h12M16 19L13 4h3"/></svg></span><h3>Самокатник і велосипедист</h3><span class="hint">Натисни →</span><span class="more">Їде повільно серед людей, поступається пішоходам, на переході злазить і переводить самокат поруч. Завжди в шоломі.</span></button>
+      <button class="reveal" aria-expanded="false"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v7M4 15l6-2M20 15l-6-2"/></svg></span><h3>Водій</h3><span class="hint">Натисни →</span><span class="more">Машина не може зупинитися миттєво. Навіть уважний водій не побачить того, хто вибігає з-за перешкоди.</span></button>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Запитайте: «У яких ролях ви вже були сьогодні?» Зазвичай діти були пішоходом і пасажиром.</li></ul></div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" data-title="Перехід дороги" hidden>
+    <span class="plate">Пішохід</span>
+    <h2>Як правильно перейти дорогу</h2>
+    <ol class="steps">
+      <li><b>Знайди перехід</b><span>«Зебра», підземний або надземний перехід. Не переходь там, де зручніше.</span></li>
+      <li><b>Зупинись на краю тротуару</b><span>Не стій на бордюрі впритул до дороги.</span></li>
+      <li><b>Зніми навушники, сховай телефон</b><span>Тобі потрібні і очі, і вуха.</span></li>
+      <li><b>Подивись ліворуч, потім праворуч</b><span>В Україні правосторонній рух: першими наближаються машини зліва.</span></li>
+      <li><b>Переконайся, що машини зупинились</b><span>Зелене світло не зупиняє машину, її зупиняє водій. Встанови з ним зоровий контакт.</span></li>
+      <li><b>Іди, не біжи</b><span>Переходь під прямим кутом. На середині дороги ще раз глянь праворуч.</span></li>
+    </ol>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Попросіть когось з учнів «озвучити» перехід біля своєї школи: де там перехід, чи є світлофор.</li></ul></div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" data-title="Світлофор" hidden>
+    <span class="plate">Пішохідний світлофор</span>
+    <h2>Що означає кожен сигнал?</h2>
+    <div class="tl-wrap">
+      <div class="tl" aria-hidden="true">
+        <div class="lamp r" id="lampR"><svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="4" r="2.4"/><rect x="9" y="7.5" width="6" height="8" rx="1.5"/><rect x="9" y="15" width="2.4" height="7" rx="1"/><rect x="12.6" y="15" width="2.4" height="7" rx="1"/></svg></div>
+        <div class="lamp g" id="lampG"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><circle cx="13" cy="4" r="1.8" fill="#fff"/><path d="M12 8l-2 6-3 6M12 11l4 3 1 6M11 9l-4 3"/></svg></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0;width:100%">
+        <div class="tl-btns" id="tlBtns">
+          <button class="btn" data-s="red">Червоний</button>
+          <button class="btn" data-s="green">Зелений</button>
+          <button class="btn" data-s="blink">Зелений блимає</button>
+          <button class="btn" data-s="off">Світлофор вимкнений</button>
+        </div>
+        <div class="tl-out" id="tlOut"><h3>Оберіть сигнал</h3><p class="small">Спершу запитайте клас, а потім натисніть кнопку й перевірте відповідь.</p></div>
+      </div>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Перед кожним натисканням запитуйте в чат: «Що робимо?»</li></ul></div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" data-title="Пастки" hidden>
+    <span class="plate red">Дорожні пастки</span>
+    <h2>Ситуації, які здаються безпечними</h2>
+    <p class="lead">Натисніть на картку, щоб перевернути її і побачити, як діяти правильно.</p>
+    <div class="grid g3" id="traps">
+      <button class="flip" aria-pressed="false"><div class="in"><div class="face"><span class="tag">Пастка</span><h3>Автобус на зупинці</h3><p>Хочеться швидко перебігти перед ним або позаду.</p></div><div class="face back"><span class="tag">Як правильно</span><h3>Дочекайся, поки він від'їде</h3><p>Автобус закриває тебе від водіїв, а їх від тебе. Переходь лише по найближчому переходу.</p></div></div></button>
+      <button class="flip" aria-pressed="false"><div class="in"><div class="face"><span class="tag">Пастка</span><h3>Одна машина зупинилась</h3><p>Водій махає рукою: «Проходь!»</p></div><div class="face back"><span class="tag">Як правильно</span><h3>Перевір сусідню смугу</h3><p>Інша машина може обганяти саме зараз і не бачити тебе за першою.</p></div></div></button>
+      <button class="flip" aria-pressed="false"><div class="in"><div class="face"><span class="tag">Пастка</span><h3>М'яч вилетів на дорогу</h3><p>Перша думка: швидко забрати.</p></div><div class="face back"><span class="tag">Як правильно</span><h3>Зупинись і поклич дорослого</h3><p>М'яч можна купити новий. Тебе ніхто не замінить.</p></div></div></button>
+      <button class="flip" aria-pressed="false"><div class="in"><div class="face"><span class="tag">Пастка</span><h3>Навушники та телефон</h3><p>«Я ж дивлюся, просто музика грає».</p></div><div class="face back"><span class="tag">Як правильно</span><h3>Біля дороги без гаджетів</h3><p>Ти не почуєш тихий електромобіль, сигнал машини чи самокат за спиною.</p></div></div></button>
+      <button class="flip" aria-pressed="false"><div class="in"><div class="face"><span class="tag">Пастка</span><h3>Запізнююсь до школи</h3><p>Біжу через дорогу «лише цього разу».</p></div><div class="face back"><span class="tag">Як правильно</span><h3>Виходь на 5 хвилин раніше</h3><p>Поспіх забирає увагу. Краще запізнитися на урок.</p></div></div></button>
+      <button class="flip" aria-pressed="false"><div class="in"><div class="face"><span class="tag">Пастка</span><h3>Виїзд із двору</h3><p>Тротуар перетинає виїзд з парковки чи гаража.</p></div><div class="face back"><span class="tag">Як правильно</span><h3>Пригальмуй і подивись</h3><p>Машина, яка виїжджає заднім ходом, погано бачить дітей.</p></div></div></button>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Перед тим як перевернути картку, запитайте клас: «Що тут небезпечно?»</li></ul></div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" data-title="Гальмівний шлях" hidden>
+    <span class="plate amber">Експеримент</span>
+    <h2>Чому машина не зупиняється миттєво</h2>
+    <p class="lead">Дитина вибігла на дорогу за 25 метрів до машини. Чи встигне водій загальмувати? Змінюйте швидкість і стан дороги.</p>
+    <div class="sim">
+      <div class="controls">
+        <label for="spd"><span>Швидкість: <span id="spdV">50</span> км/год</span><input id="spd" type="range" min="20" max="90" step="5" value="50"></label>
+        <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:600;font-size:.9rem">Дорога</span>
+          <div class="seg" id="surf"><button aria-pressed="true" data-mu="0.7">Суха</button><button aria-pressed="false" data-mu="0.4">Мокра</button><button aria-pressed="false" data-mu="0.15">Ожеледиця</button></div></div>
+      </div>
+      <div>
+        <div class="road"><div class="mid"></div><div class="react" id="rReact"></div><div class="brake" id="rBrake"></div><div class="kid" id="rKid"><span>дитина</span></div></div>
+        <div class="scale"><span>0 м</span><span>25</span><span>50</span><span>75</span><span>100 м і більше</span></div>
+      </div>
+      <div class="legend"><span><i style="background:color-mix(in srgb,var(--amber) 55%,transparent)"></i>Водій помітив і реагує (≈1 секунда)</span><span><i style="background:color-mix(in srgb,var(--red) 60%,transparent)"></i>Машина гальмує</span></div>
+      <div class="grid g2">
+        <div><span class="small">Шлях до повної зупинки</span><div class="big-n" id="stopD">28 м</div><span class="small" id="busEq"></span></div>
+        <div class="verdict bad" id="verdict"></div>
+      </div>
+      <p class="src">Орієнтовний розрахунок: реакція водія 1 с і типове зчеплення шин з дорогою. У реальному житті шлях буває ще довшим.</p>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Покажіть: на 50 км/год на сухій дорозі машина ще не встигає зупинитися за 25 м. Перемкніть на «Мокра» і «Ожеледиця».</li><li>Висновок: дорогу не перебігаємо, навіть якщо машина «ще далеко».</li></ul></div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" data-title="Світловідбивачі" hidden>
+    <span class="plate">Темна пора доби</span>
+    <h2>Невидимка на дорозі</h2>
+    <p class="lead">У листопаді темніє рано. Ось з якої відстані водій з ближнім світлом фар помічає пішохода в темному одязі.</p>
+    <div class="night">
+      <div class="lane"><span class="lbl">Без світловідбивача</span><div class="beam"><div class="seen" id="seen1" style="left:0"></div></div></div>
+      <div class="lane"><span class="lbl">Зі світловідбивачем</span><div class="beam"><div class="seen" id="seen2" style="left:0"></div></div></div>
+      <div class="grid g2">
+        <div><div class="val" id="v1">?</div><div class="note">Машина на швидкості 60 км/год проїжджає 30 метрів менш ніж за 2 секунди.</div></div>
+        <div><div class="val" id="v2">?</div><div class="note">Водій має час спокійно пригальмувати й об'їхати.</div></div>
+      </div>
+      <div><button class="btn primary" id="nightBtn">Увімкнути фари</button></div>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>Що підійде</h3><p>Брелок-флікер, світловідбивна стрічка на рукаві чи рюкзаку, жилет.</p></div>
+      <div class="card"><h3>Де чіпляти</h3><p>Нижче пояса й з боку дороги: так світло фар потрапляє на нього першим.</p></div>
+      <div class="card"><h3>За містом</h3><p>За правилами дорожнього руху пішохід у темряві поза населеним пунктом має мати світловідбивні елементи.</p></div>
+    </div>
+    <p class="src">Відстані приблизні, вони залежать від фар, погоди та освітлення вулиці.</p>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Запитайте: «У кого на рюкзаку є світловідбивач? Покажіть у камеру».</li></ul></div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" data-title="Пасажир" hidden>
+    <span class="plate">Пасажир</span>
+    <h2>У машині та в автобусі</h2>
+    <div class="grid g2">
+      <div class="card"><h3>У автомобілі</h3><ul style="margin:0;padding-left:20px;color:var(--muted)"><li>Пристібайся завжди, навіть на задньому сидінні й навіть «до магазину за рогом».</li><li>Молодші діти їздять у дитячому кріслі або на бустері, поки не доростуть до звичайного паска.</li><li>Не відволікай водія і не висовуйся у вікно.</li><li>Виходь лише з боку тротуару.</li></ul></div>
+      <div class="card"><h3>У громадському транспорті</h3><ul style="margin:0;padding-left:20px;color:var(--muted)"><li>Чекай на зупинці, а не на краю дороги.</li><li>Заходь і виходь лише після повної зупинки.</li><li>Тримайся за поручень під час руху.</li><li>Вийшов: не обходь автобус, дочекайся, поки він від'їде.</li></ul></div>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Запитайте: «Чому пасок треба пристібати навіть на задньому сидінні?» Відповідь: під час різкого гальмування людину кидає вперед з великою силою.</li></ul></div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" data-title="Самокат" hidden>
+    <span class="plate green">Звичайний самокат</span>
+    <h2>Самокат — це не іграшка, а засіб пересування</h2>
+    <p class="lead">Навіть на звичайному самокаті легко розігнатися до швидкості бігуна, а маленькі колеса спотикаються на ямах і бордюрах.</p>
+    <div class="grid g3">
+      <div class="card"><h3>Де їздити</h3><p>Двори, парки, майданчики, тротуари. Не виїжджай на проїжджу частину.</p></div>
+      <div class="card"><h3>Пішохід головний</h3><p>Серед людей їдь зі швидкістю кроку, об'їжджай повільно або злазь.</p></div>
+      <div class="card"><h3>Перехід</h3><p>Перед «зеброю» злазь і переводь самокат поруч, тримаючи за кермо.</p></div>
+      <div class="card"><h3>Захист</h3><p>Шолом обов'язково. Наколінники та налокітники рятують від більшості синців і переломів.</p></div>
+      <div class="card"><h3>Перевір перед поїздкою</h3><p>Гальмо працює, кермо не хитається, колеса цілі.</p></div>
+      <div class="card"><h3>Погода</h3><p>Мокре листя, калюжі й ожеледиця: краще піти пішки.</p></div>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Запитайте: «Хто з вас їздить на самокаті в шоломі?» Без осуду, просто для розмови.</li></ul></div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" data-title="Електросамокат: ризики" hidden>
+    <span class="plate red">Електросамокат</span>
+    <h2>Чому електросамокат такий небезпечний</h2>
+    <div class="bars" id="bars">
+      <div class="brow"><span>Пішохід</span><div><div class="b" data-v="5">5 км/год</div></div></div>
+      <div class="brow"><span>Бігун</span><div><div class="b" data-v="12">12 км/год</div></div></div>
+      <div class="brow"><span>Звичайний самокат</span><div><div class="b" data-v="15">до 15 км/год</div></div></div>
+      <div class="brow"><span>Електросамокат</span><div><div class="b hot" data-v="25">25 км/год і більше</div></div></div>
+    </div>
+    <p class="small">Приблизна швидкість. Багато електросамокатів технічно можуть їхати ще швидше.</p>
+    <div class="grid g4">
+      <div class="card"><h3>Швидкий</h3><p>Падіння на 25 км/год за силою удару схоже на стрибок з висоти 2,5 метра.</p></div>
+      <div class="card"><h3>Тихий</h3><p>Пішоходи не чують його за спиною.</p></div>
+      <div class="card"><h3>Маленькі колеса</h3><p>Яма, люк чи бордюр можуть миттєво перекинути.</p></div>
+      <div class="card"><h3>Важкий</h3><p>Зіткнення з пішоходом травмує обох.</p></div>
+    </div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Пояснення: 25 км/год це близько 7 м/с. Таку ж швидкість тіло набирає, падаючи з висоти приблизно 2,5 м.</li><li>Запитайте: «Хто бачив, як на одному самокаті їдуть удвох?»</li></ul></div>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide" data-title="Електросамокат: правила" hidden>
+    <span class="plate red">Електросамокат</span>
+    <h2>Які правила діють і готуються</h2>
+    <div class="grid g2">
+      <div class="law">
+        <h3>В Україні</h3>
+        <p>Окремого закону про електросамокати поки не ухвалено. Парламент розглядає законопроєкт, який пропонує:</p>
+        <ul><li>до 7 років: лише тротуаром і з дорослим;</li><li>7–14 років: парки та спеціальні майданчики;</li><li>з 14 років: велодоріжки або узбіччя;</li><li>шолом і світлові сигнали обов'язкові;</li><li>швидкість до 25 км/год, у пішохідних зонах до 10 км/год.</li></ul>
+      </div>
+      <div class="law local">
+        <h3>Пам'ятай про прокат</h3>
+        <p>Сервіси прокату електросамокатів мають вікові обмеження у своїх правилах. Брати самокат через акаунт батьків чи старших друзів небезпечно: тебе не навчили ним керувати, а відповідати в разі аварії доведеться і власнику акаунта.</p>
+        <p>Деякі міста вже запроваджують власні правила: вік, обов'язковий шолом, місця для паркування. Дізнайся, які діють у твоїй громаді.</p>
+      </div>
+    </div>
+    <h3>Золоті правила, які працюють завжди</h3>
+    <div class="gold">
+      <div><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="var(--red)" stroke-width="5"/><text x="20" y="26" text-anchor="middle" font-family="Unbounded,sans-serif" font-weight="800" font-size="15" fill="#16202B">1</text></svg><span><b>Одна людина на самокаті.</b> Удвох неможливо втримати рівновагу та загальмувати.</span></div>
+      <div><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="var(--blue)"/><path d="M9 23a11 10 0 0 1 22 0z" fill="#fff"/><rect x="8" y="23" width="24" height="3" rx="1.5" fill="#fff"/></svg><span><b>Шолом на голові й застебнутий.</b> На кермі він не допоможе.</span></div>
+      <div><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="var(--red)" stroke-width="5"/><rect x="14" y="9" width="12" height="22" rx="2" fill="#16202B"/><path d="M8 32L32 8" stroke="var(--red)" stroke-width="5"/></svg><span><b>Без телефону і навушників.</b> Обидві руки на кермі.</span></div>
+      <div><svg viewBox="0 0 40 40"><rect x="2" y="2" width="36" height="36" rx="6" fill="var(--blue)"/><path d="M8 32h24" stroke="#fff" stroke-width="3" stroke-dasharray="4 3"/><circle cx="21" cy="11" r="3" fill="#fff"/><path d="M20 15l-3 7-3 6M20 18l4 3 1 6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg><span><b>На переході злазь</b> і переводь самокат пішки.</span></div>
+      <div><svg viewBox="0 0 40 40"><path d="M20 3L37 35H3z" fill="#fff" stroke="var(--red)" stroke-width="4" stroke-linejoin="round"/><text x="20" y="31" text-anchor="middle" font-family="Unbounded,sans-serif" font-weight="800" font-size="14" fill="#16202B">!</text></svg><span><b>Прокатний самокат не бери чужим акаунтом.</b> Вікові обмеження існують через травми.</span></div>
+    </div>
+    <p class="src">Джерела: <a href="https://week.ukrainianwall.com/163979-samokatnikam-gotuyut-novi-pravila-kogo-ne-pustyat-na-dorogu-z-lipnya" target="_blank" rel="noopener">Тиждень, червень 2026</a> · <a href="https://espreso.tv/suspilstvo-v-ukraini-mozhut-vpershe-vregulyuvati-rukh-elektrosamokativ-komitet-radi-pidtrimav-zakonoproekt" target="_blank" rel="noopener">Еспресо, червень 2026</a> · <a href="https://suspilne.media/kyiv/1298825-na-kiivsini-avto-zbilo-elektrosamokat-iz-ditmi-zaginuv-10-ricnij-hlopcik/" target="_blank" rel="noopener">Суспільне Київ, травень 2026</a></p>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Наголосіть: навіть поки закону немає, правила безпеки однакові для всіх. Нагадайте випадок у Гатному: двоє дітей на одному самокаті.</li><li>Попросіть учнів назвати, яке з п'яти золотих правил вони порушували найчастіше.</li></ul></div>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" data-title="Екіпірування" hidden>
+    <span class="plate green">Гра</span>
+    <h2>Збери райдера в дорогу</h2>
+    <p class="lead">Що з цього потрібно взяти на поїздку самокатом? Натискайте на речі по черзі, клас голосує в чаті.</p>
+    <div class="pool" id="pool"></div>
+    <div class="equip">
+      <div class="zone"><h3 style="color:var(--green)">Беру з собою</h3><div class="pool" id="zoneGood"></div></div>
+      <div class="zone"><h3 style="color:var(--red)">Залишаю вдома або ховаю</h3><div class="pool" id="zoneBad"></div></div>
+    </div>
+    <div class="fb" id="equipFb">Оберіть першу річ.</div>
+    <div><button class="btn" id="equipReset">Почати знову</button></div>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide" data-title="Ситуації" hidden>
+    <span class="plate amber">Що ти зробиш?</span>
+    <h2>Ситуаційні задачі</h2>
+    <div class="qbox" id="scen"></div>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Дайте 20–30 секунд на відповідь у чат літерою А, Б чи В, потім натисніть варіант, який обрала більшість.</li></ul></div>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide" data-title="Вікторина" hidden>
+    <span class="plate">Перевір себе</span>
+    <h2>Вікторина</h2>
+    <div class="qbox" id="quiz"></div>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide" data-title="Якщо сталася біда" hidden>
+    <span class="plate red">Якщо сталася біда</span>
+    <h2>Що робити, якщо ти став свідком ДТП</h2>
+    <div class="sos">
+      <div><b>103</b><span>Швидка медична допомога</span></div>
+      <div><b>102</b><span>Поліція</span></div>
+      <div><b>112</b><span>Єдиний номер екстреної допомоги</span></div>
+    </div>
+    <ol class="steps">
+      <li><b>Подбай про себе</b><span>Не вибігай на дорогу, відійди в безпечне місце.</span></li>
+      <li><b>Поклич дорослого</b><span>Або сам набери 103 чи 112.</span></li>
+      <li><b>Скажи чітко</b><span>Що сталося, де саме (вулиця, орієнтир), скільки постраждалих.</span></li>
+      <li><b>Не клади слухавку першим</b><span>Диспетчер підкаже, що робити далі.</span></li>
+    </ol>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Попросіть одного учня «зіграти» дзвінок на 103: що він скаже диспетчеру.</li></ul></div>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide" data-title="Підсумок" hidden>
+    <span class="plate green">Підсумок</span>
+    <h2>Мої правила безпечної дороги</h2>
+    <p class="lead">Позначте разом з класом кожне правило, яке ви обіцяєте виконувати.</p>
+    <div class="promise" id="promise"></div>
+    <p class="done-msg" id="doneMsg" hidden>Дякую! Бережіть себе на дорозі.</p>
+    <div class="notes" hidden><b>Для вчителя</b><ul><li>Домашнє завдання за бажанням: намалювати безпечний маршрут від дому до школи і позначити небезпечні місця.</li></ul></div>
+  </section>
+
+  </main>
+
+  <nav class="bar" aria-label="Навігація слайдами">
+    <button class="nav" id="prev" aria-label="Попередній слайд">←</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count">1/18</span>
+    <button class="notes-btn" id="notesBtn" aria-pressed="false">Нотатки<span class="long"> вчителя</span></button>
+    <button class="nav" id="next" aria-label="Наступний слайд">→</button>
+  </nav>
+</div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const slides = [...document.querySelectorAll('.slide')];
+  const stage = $('#stage'), dots = $('#dots');
+  let cur = 0, notesOn = false;
+
+  slides.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.setAttribute('aria-label',(i+1)+'. '+s.dataset.title);
+    b.title=(i+1)+'. '+s.dataset.title;
+    b.onclick=()=>go(i);
+    dots.appendChild(b);
+  });
+
+  function go(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    slides[cur].hidden=true; cur=i; slides[cur].hidden=false;
+    stage.scrollTop=0;
+    [...dots.children].forEach((d,k)=>{d.className=k<cur?'done':k===cur?'cur':''});
+    $('#count').textContent=(cur+1)+'/'+slides.length;
+    $('#prev').disabled=cur===0; $('#next').disabled=cur===slides.length-1;
+    if(location.hash!=='#s'+(cur+1)) history.replaceState(null,'','#s'+(cur+1));
+    if(slides[cur].dataset.title==='Електросамокат: ризики') animBars();
+  }
+  $('#prev').onclick=()=>go(cur-1);
+  $('#next').onclick=()=>go(cur+1);
+  document.addEventListener('keydown',e=>{
+    if(e.target.matches('input,select,textarea'))return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'){go(cur+1);e.preventDefault()}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){go(cur-1);e.preventDefault()}
+    if(e.key==='n'||e.key==='т'){toggleNotes()}
+  });
+  function toggleNotes(){
+    notesOn=!notesOn;
+    $('#notesBtn').setAttribute('aria-pressed',notesOn);
+    document.querySelectorAll('.notes').forEach(n=>n.hidden=!notesOn);
+  }
+  $('#notesBtn').onclick=toggleNotes;
+  function fromHash(){const m=location.hash.match(/^#s(\d+)$/);return m?+m[1]-1:0}
+  window.addEventListener('hashchange',()=>{const i=fromHash();if(i!==cur)go(i)});
+
+  /* poll */
+  const pollItems=['1. Пішки','2. Громадським транспортом','3. Авто з батьками','4. Велосипед або самокат'];
+  const pv=pollItems.map(()=>0);
+  const poll=$('#poll');
+  pollItems.forEach((t,i)=>{
+    const r=document.createElement('div');r.className='poll-row';
+    r.innerHTML=`<span style="font-weight:600">${t}</span><div class="track"><div class="fill"></div></div><div class="poll-ctrl"><button aria-label="Мінус">−</button><output>0</output><button aria-label="Плюс">+</button></div>`;
+    const [minus,plus]=r.querySelectorAll('button');
+    minus.onclick=()=>{pv[i]=Math.max(0,pv[i]-1);drawPoll()};
+    plus.onclick=()=>{pv[i]++;drawPoll()};
+    poll.appendChild(r);
+  });
+  function drawPoll(){
+    const max=Math.max(1,...pv);
+    [...poll.children].forEach((r,i)=>{r.querySelector('output').textContent=pv[i];r.querySelector('.fill').style.width=(pv[i]/max*100)+'%'});
+  }
+
+  /* roles */
+  document.querySelectorAll('#roles .reveal').forEach(b=>b.onclick=()=>b.setAttribute('aria-expanded',b.getAttribute('aria-expanded')!=='true'));
+  /* flips */
+  document.querySelectorAll('#traps .flip').forEach(b=>b.onclick=()=>b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true'));
+
+  /* traffic light */
+  const TL={
+    red:{r:1,g:0,blink:0,h:'Стій!',p:'Переходити не можна, навіть якщо машин не видно. Зачекай на зелений.'},
+    green:{r:0,g:1,blink:0,h:'Можна йти, але спершу переконайся',p:'Подивись ліворуч і праворуч. Переходь лише тоді, коли машини справді зупинилися.'},
+    blink:{r:0,g:1,blink:1,h:'Не починай перехід',p:'Зелений скоро зміниться на червоний. Якщо ти вже на дорозі, спокійно закінчи перехід. Якщо ще на тротуарі, зачекай наступного зеленого.'},
+    off:{r:0,g:0,blink:0,h:'Ти як на нерегульованому переході',p:'Машини не зобов\'язані зупинятися за сигналом. Подивись ліворуч і праворуч, дочекайся, поки водії тебе побачать і пропустять.'}
+  };
+  document.querySelectorAll('#tlBtns button').forEach(b=>b.onclick=()=>{
+    const s=TL[b.dataset.s];
+    $('#lampR').classList.toggle('on',!!s.r);
+    $('#lampG').classList.toggle('on',!!s.g);
+    $('#lampG').classList.toggle('blink',!!s.blink);
+    $('#tlOut').innerHTML=`<h3>${s.h}</h3><p>${s.p}</p>`;
+  });
+
+  /* braking */
+  const KID=25, MAXD=100;
+  let mu=0.7;
+  function brake(){
+    const v=+$('#spd').value; $('#spdV').textContent=v;
+    const ms=v/3.6, react=ms*1, br=ms*ms/(2*mu*9.81), tot=react+br;
+    const pc=d=>Math.min(100,d/MAXD*100);
+    $('#rReact').style.width=pc(react)+'%';
+    $('#rBrake').style.left=pc(react)+'%';
+    $('#rBrake').style.width=Math.max(0,pc(tot)-pc(react))+'%';
+    $('#rKid').style.left=pc(KID)+'%';
+    $('#stopD').textContent=Math.round(tot)+' м';
+    $('#busEq').textContent='Це приблизно '+(tot/12).toFixed(1).replace('.',',')+' довжини автобуса';
+    const vd=$('#verdict');
+    if(tot>KID){vd.className='verdict bad';vd.textContent='Не встигне зупинитися: машина проїде ще '+Math.round(tot-KID)+' м після місця, де вибігла дитина.'}
+    else{vd.className='verdict ok';vd.textContent='Встигне зупинитися, але лише якщо водій уважний і реагує вчасно.'}
+  }
+  $('#spd').oninput=brake;
+  document.querySelectorAll('#surf button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('#surf button').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true'); mu=+b.dataset.mu; brake();
+  });
+  brake();
+
+  /* night */
+  let nightOn=false;
+  $('#nightBtn').onclick=()=>{
+    nightOn=!nightOn;
+    $('#seen1').style.left=nightOn?'calc(18% - 3px)':'0';
+    $('#seen2').style.left=nightOn?'calc(100% - 6px)':'0';
+    $('#v1').textContent=nightOn?'≈ 25–30 м':'?';
+    $('#v2').textContent=nightOn?'≈ 150 м':'?';
+    $('#nightBtn').textContent=nightOn?'Вимкнути фари':'Увімкнути фари';
+  };
+
+  /* bars */
+  function animBars(){
+    document.querySelectorAll('#bars .b').forEach(b=>{b.style.width='0';requestAnimationFrame(()=>requestAnimationFrame(()=>{b.style.transition='width .7s ease';b.style.width=(b.dataset.v/25*100)+'%'}))});
+  }
+  document.querySelectorAll('#bars .b').forEach(b=>b.style.width=(b.dataset.v/25*100)+'%');
+
+  /* equip */
+  const EQ=[
+    ['Шолом',1,'Так! Шолом захищає голову, найвразливіше місце при падінні.'],
+    ['Навушники з музикою',0,'Ні. Ти не почуєш машину, сигнал чи пішохода.'],
+    ['Наколінники',1,'Так. Коліна першими торкаються асфальту.'],
+    ['Телефон у руці',0,'Ні. Обидві руки мають бути на кермі. Телефон ховаємо в кишеню.'],
+    ['Налокітники',1,'Так. Вони рятують лікті та зап\'ястя.'],
+    ['Світловідбивач',1,'Так. Особливо восени й узимку, коли рано темніє.'],
+    ['Капюшон на голові',0,'Ні. Капюшон закриває огляд збоку.'],
+    ['Друг на самокаті позаду',0,'Ні. Один самокат — одна людина.'],
+    ['Ліхтарик або фара',1,'Так. У темряві тебе мають бачити, а ти маєш бачити дорогу.']
+  ];
+  function equipInit(){
+    $('#pool').innerHTML='';$('#zoneGood').innerHTML='';$('#zoneBad').innerHTML='';
+    $('#equipFb').textContent='Оберіть першу річ.';
+    EQ.forEach(([t,ok,fb])=>{
+      const b=document.createElement('button');b.className='item';b.textContent=t;
+      b.onclick=()=>{
+        b.classList.add(ok?'good':'bad');b.disabled=true;
+        (ok?$('#zoneGood'):$('#zoneBad')).appendChild(b);
+        const left=$('#pool').children.length;
+        $('#equipFb').textContent=fb+(left?'':' Усі речі розібрано. Райдер готовий!');
+      };
+      $('#pool').appendChild(b);
+    });
+  }
+  $('#equipReset').onclick=equipInit; equipInit();
+
+  /* generic question engine */
+  function qEngine(el,items,opts){
+    let i=0,score=0,answered=false;
+    function render(){
+      if(i>=items.length){
+        if(opts.final){el.innerHTML=opts.final(score,items.length);el.querySelector('[data-restart]').onclick=()=>{i=0;score=0;render()};return}
+      }
+      const q=items[i];answered=false;
+      el.innerHTML=`<div class="qtop"><span class="small">${opts.label} ${i+1} з ${items.length}</span>${opts.showScore?`<span class="small">Правильних: ${score}</span>`:''}</div>
+        <p class="qtext">${q.q}</p><div class="opts"></div><div class="expl" hidden></div>
+        <div class="qnav"><button class="btn" data-p ${i===0?'disabled':''}>← Назад</button><button class="btn primary" data-n hidden>${i===items.length-1?(opts.final?'Результат':'Далі'):'Далі →'}</button></div>`;
+      const box=el.querySelector('.opts');
+      q.o.forEach((t,k)=>{
+        const b=document.createElement('button');b.className='opt';b.textContent=(opts.letters?'АБВГ'[k]+'. ':'')+t;
+        b.onclick=()=>{
+          if(answered)return;answered=true;
+          if(k===q.a)score++;
+          box.querySelectorAll('.opt').forEach((x,j)=>{x.disabled=true;if(j===q.a)x.classList.add('right');else if(j===k)x.classList.add('wrong')});
+          const ex=el.querySelector('.expl');ex.hidden=false;ex.innerHTML=(k===q.a?'<b>Правильно.</b> ':'<b>Не зовсім.</b> ')+q.e;
+          const n=el.querySelector('[data-n]');n.hidden=(i===items.length-1&&!opts.final);
+          if(opts.showScore)el.querySelector('.qtop span:last-child').textContent='Правильних: '+score;
+        };
+        box.appendChild(b);
+      });
+      el.querySelector('[data-p]').onclick=()=>{if(i>0){i--;render()}};
+      el.querySelector('[data-n]').onclick=()=>{i++;render()};
+    }
+    render();
+  }
+
+  qEngine($('#scen'),[
+    {q:'Після уроків друг пропонує прокататися вдвох на його електросамокаті до магазину. Що ти зробиш?',o:['Погоджуся, тут недалеко','Відмовлюся і піду пішки поруч','Сяду, але попрошу їхати повільно'],a:1,e:'На електросамокаті має бути лише одна людина. Удвох змінюється рівновага, гальмівний шлях стає довшим, а при падінні травмуються обоє.'},
+    {q:'Ти підходиш до переходу, а зелений світлофор почав блимати. Що робиш?',o:['Біжу, поки не загорівся червоний','Зупиняюсь і чекаю наступного зеленого','Іду швидким кроком, водії зачекають'],a:1,e:'Блимаючий зелений означає, що сигнал зараз зміниться. Починати перехід не можна.'},
+    {q:'Ти їдеш на самокаті тротуаром. Попереду жінка з дитячим візком і бабуся з паличкою. Як вчиниш?',o:['Подзвоню, щоб вони відійшли','Пригальмую до швидкості кроку або злізу й обійду','Швидко об\'їду по краю бордюру'],a:1,e:'На тротуарі пішохід завжди головний. Бордюр і швидкий об\'їзд — найчастіші причини падінь.'},
+    {q:'Тобі 13. Старший брат пропонує взяти прокатний електросамокат через його акаунт. Що скажеш?',o:['Супер, давай!','Ні, дякую: вікові обмеження придумали через травми','Візьму, але тільки в парку'],a:1,e:'Прокатні сервіси мають вікові обмеження, і їх придумали через травми. Якщо станеться ДТП, відповідати доведеться і брату.'},
+    {q:'Увечері ти повертаєшся з тренування в темній куртці. Вулиця погано освітлена. Що допоможе?',o:['Іти швидше','Світловідбивач і ліхтарик на телефоні','Іти посередині дороги, там світліше'],a:1,e:'Зі світловідбивачем водій побачить тебе приблизно в п\'ять разів раніше.'}
+  ],{label:'Ситуація',letters:true,showScore:false,final:(s,n)=>`<p class="qtext">Усі ситуації розібрано.</p><p class="small">Обговоріть, яка з них траплялася в житті учнів.</p><div class="qnav"><button class="btn" data-restart>Почати знову</button></div>`});
+
+  qEngine($('#quiz'),[
+    {q:'На який сигнал пішохідного світлофора можна починати перехід?',o:['Червоний','Зелений, коли машини зупинились','Зелений, що блимає'],a:1,e:'Зелений дозволяє рух, але спершу переконайся, що машини справді зупинились.'},
+    {q:'У який бік треба подивитися першим, підійшовши до дороги?',o:['Праворуч','Ліворуч','Не має значення'],a:1,e:'В Україні правосторонній рух, тому найближча смуга з машинами зліва.'},
+    {q:'Як правильно перейти дорогу, вийшовши з автобуса?',o:['Обійти автобус спереду','Обійти автобус ззаду','Дочекатися, поки автобус від\'їде, і перейти на переході'],a:2,e:'Автобус, що стоїть, закриває огляд і тобі, і водіям.'},
+    {q:'Скільки людей може їхати на одному електросамокаті?',o:['Одна','Дві, якщо обидві легкі','Скільки вміститься'],a:0,e:'Один самокат — одна людина.'},
+    {q:'Що робити з самокатом перед пішохідним переходом?',o:['Проїхати переходом повільно','Зійти й перевести самокат поруч','Проїхати збоку від «зебри»'],a:1,e:'На переході ти пішохід, тому самокат переводиш поруч.'},
+    {q:'Що найкраще захищає під час падіння з самоката?',o:['Шолом і захист колін та ліктів','Кепка','Рукавички без нічого іншого'],a:0,e:'Шолом захищає голову, а наколінники й налокітники рятують від більшості травм кінцівок.'},
+    {q:'Чим особливо небезпечний електросамокат для пішоходів?',o:['Він дуже гучний','Він швидкий і майже беззвучний','Він яскравий'],a:1,e:'Пішоходи не чують його за спиною, а швидкість до 25 км/год і більше.'},
+    {q:'Машина їде 50 км/год. Чи встигне вона зупинитися, якщо дитина вибігла за 25 метрів?',o:['Так, легко','Ні, їй потрібно близько 28 м навіть на сухій дорозі','Так, якщо водій посигналить'],a:1,e:'Пам\'ятаєте експеримент? На мокрій дорозі шлях ще довший.'},
+    {q:'За номером 103 викликають…',o:['Пожежників','Поліцію','Швидку медичну допомогу'],a:2,e:'103 — швидка, 102 — поліція, 112 — єдиний номер екстреної допомоги.'},
+    {q:'Чому світловідбивач потрібен навіть у місті?',o:['Це модно','Водій бачить тебе в кілька разів раніше','Його вимагає школа'],a:1,e:'Без світловідбивача пішохода в темному одязі видно лише з ≈25–30 м, з ним приблизно зі 150 м.'}
+  ],{label:'Питання',letters:false,showScore:true,final:(s,n)=>`<div class="score">${s} / ${n}</div><p class="qtext">${s===n?'Чудово! Ви знаєте правила напам\'ять.':s>=n*0.7?'Добрий результат. Повторимо кілька пунктів.':'Варто ще раз переглянути слайди.'}</p><div class="qnav"><button class="btn" data-restart>Пройти ще раз</button></div>`});
+
+  /* promise */
+  const PR=['Переходжу дорогу лише на переході або на зелений сигнал','Біля дороги знімаю навушники й ховаю телефон','Їжджу на самокаті тільки в шоломі','На переході злажу із самоката і переводжу його','Один самокат — одна людина','Увечері ношу світловідбивач','Завжди пристібаюся в машині'];
+  const pp=$('#promise');
+  PR.forEach(t=>{
+    const b=document.createElement('button');b.setAttribute('aria-pressed','false');
+    b.innerHTML='<span class="box" aria-hidden="true">✓</span><span>'+t+'</span>';
+    b.onclick=()=>{b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true');
+      $('#doneMsg').hidden=[...pp.children].some(x=>x.getAttribute('aria-pressed')!=='true')};
+    pp.appendChild(b);
+  });
+
+  /* start */
+  const start=fromHash();
+  slides.forEach(s=>s.hidden=true);
+  slides[0].hidden=false; cur=0; go(start);
+})();
+</script>
+
+</body></html>
