@@ -1,0 +1,965 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Руханка вдома 7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  /* Single, deliberate "sports hall" look: light cool paper, navy ink, sunny / coral / mint section colors */
+  :root{
+    --ink:#132A4F; --ink-2:#465B7E; --paper:#EEF3FB; --card:#FAFCFF; --line:#D3DDEE;
+    --court:#2F6FDB; --court-ink:#1F4FA8;
+    --sun:#FFB020; --sun-ink:#8A5600;
+    --coral:#FF6B4A; --coral-ink:#B83A1E;
+    --mint:#2DB37E; --mint-ink:#137450;
+    --good:#1F9E6E; --bad:#D9482B;
+    --acc:var(--court); --acc-ink:var(--court-ink);
+    --display:'Rubik', 'Trebuchet MS', Arial, sans-serif;
+    --text:'Nunito', 'Trebuchet MS', Arial, sans-serif;
+  }
+  [hidden]{display:none!important}
+  html,body{height:100%}
+  body{margin:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--text);font-size:17px;padding-inline:16px;box-sizing:border-box}
+  *,*::before,*::after{box-sizing:border-box}
+  button{font:inherit;color:inherit}
+  :focus-visible{outline:3px solid var(--court);outline-offset:3px}
+
+  .app{height:100%;max-width:1320px;margin-inline:auto;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding-block:12px}
+
+  /* top bar */
+  .bar{display:flex;align-items:center;gap:16px}
+  .brand{font:800 18px/1 var(--display);letter-spacing:.01em;white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .brand i{width:14px;height:14px;border-radius:50%;background:var(--coral);box-shadow:10px 0 0 var(--sun),20px 0 0 var(--mint);margin-right:22px}
+  .prog{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+  .prog button{flex:1;height:10px;min-width:0;border:0;padding:0;border-radius:5px;background:var(--line);cursor:pointer;transition:height .2s}
+  .prog button.done{background:var(--c)}
+  .prog button.cur{height:18px;background:var(--c)}
+  .snd{flex:none;display:flex;align-items:center;gap:6px;border:0;cursor:pointer;border-radius:999px;padding:6px 12px 6px 8px;background:var(--card);box-shadow:inset 0 0 0 2px var(--line);font:700 14px/1 var(--display)}
+  .snd svg{width:22px;height:22px}
+  .snd[aria-pressed="false"]{color:var(--ink-2)}
+  .num{font:700 15px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
+
+  /* deck */
+  .deck{position:relative;min-height:0}
+  .slide{position:absolute;inset:0;overflow:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(18px,3vw,44px);align-items:center;padding:8px 4px}
+  .slide:not([hidden]){animation:in .35s ease-out}
+  @keyframes in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+
+  .copy{display:flex;flex-direction:column;gap:clamp(12px,1.8vh,20px);min-width:0}
+  .eyebrow{margin:0;font:700 14px/1.2 var(--display);text-transform:uppercase;letter-spacing:.09em;color:var(--acc-ink)}
+  h1{margin:0;font:800 clamp(34px,4.6vw,66px)/1.02 var(--display);text-wrap:balance;letter-spacing:-.01em}
+  .lead{margin:0;font-size:clamp(17px,1.5vw,21px);line-height:1.5;color:var(--ink-2);max-width:34em}
+
+  .dose{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .dose b{font:800 clamp(44px,5vw,72px)/1 var(--display);color:var(--acc-ink);font-variant-numeric:tabular-nums}
+  .dose span{font:700 clamp(19px,1.8vw,24px)/1.2 var(--display)}
+  .dose em{font-style:normal;color:var(--ink-2);font-weight:700}
+
+  .steps{list-style:none;margin:0;padding:0;counter-reset:s;display:grid;gap:10px}
+  .steps li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;font-size:clamp(17px,1.5vw,21px);line-height:1.35;font-weight:600}
+  .steps li::before{content:counter(s);width:34px;height:34px;border-radius:50%;background:var(--acc);color:var(--ink);font:800 17px/34px var(--display);text-align:center}
+  .tip{margin:0;padding:12px 16px;border-radius:14px;background:var(--card);border:2px dashed var(--line);font-size:clamp(16px,1.35vw,19px);line-height:1.45}
+  .tip b{font-family:var(--display);color:var(--acc-ink)}
+
+  /* stage */
+  .stage{position:relative;margin:0;width:100%;max-width:calc((100dvh - 190px) * 4 / 3);justify-self:center;aspect-ratio:4/3;border-radius:26px;overflow:hidden;background:#DCE7F8;box-shadow:0 0 0 4px var(--card),0 14px 34px -14px rgba(19,42,79,.45)}
+  .stage svg{display:block;width:100%;height:100%}
+  .count{position:absolute;top:12px;right:12px;background:var(--card);border-radius:999px;padding:6px 14px;display:flex;align-items:baseline;gap:6px;font-family:var(--display);box-shadow:0 2px 0 rgba(19,42,79,.15)}
+  .count b{font-size:clamp(22px,2.4vw,32px);font-weight:800;font-variant-numeric:tabular-nums;color:var(--acc-ink)}
+  .count span{font-size:15px;font-weight:700;color:var(--ink-2)}
+  .done{position:absolute;top:12px;left:12px;margin:0;background:var(--ink);color:#FFF6DE;border-radius:999px;padding:8px 16px;font:800 clamp(16px,1.6vw,20px)/1 var(--display);animation:pop .4s ease-out}
+  @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+  .ctl{position:absolute;left:12px;bottom:12px;display:flex;gap:8px}
+  .ctl button{width:44px;height:44px;border-radius:50%;border:0;background:var(--card);display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 0 rgba(19,42,79,.18)}
+  .ctl svg{width:20px;height:20px}
+
+  /* cover */
+  .plan{display:flex;flex-wrap:wrap;gap:10px}
+  .plan button{border:0;cursor:pointer;border-radius:14px;padding:10px 14px;background:var(--card);box-shadow:inset 0 -4px 0 var(--c);text-align:left;font-weight:700;line-height:1.25}
+  .plan button small{display:block;font-weight:600;color:var(--ink-2);font-size:14px}
+  .ready{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:clamp(16px,1.35vw,18px);font-weight:600}
+  .ready li{display:flex;gap:10px;align-items:center}
+  .ready li::before{content:"";width:18px;height:18px;border-radius:6px;border:3px solid var(--mint);flex:none}
+  .big-btn{align-self:flex-start;border:0;cursor:pointer;border-radius:16px;padding:14px 24px;background:var(--ink);color:#FFF6DE;font:800 clamp(18px,1.6vw,22px)/1 var(--display);box-shadow:0 5px 0 #0A1A36}
+  .big-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #0A1A36}
+
+  /* game */
+  .gright{display:flex;flex-direction:column;gap:12px;min-width:0;align-items:stretch}
+  .game .stage{max-width:calc((100dvh - 300px) * 4 / 3)}
+  .opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .opts button{border:0;cursor:pointer;border-radius:16px;padding:14px 10px;background:var(--card);font:700 clamp(16px,1.4vw,19px)/1.2 var(--display);box-shadow:inset 0 0 0 3px var(--line),0 4px 0 var(--line);min-height:64px}
+  .opts button:hover:not(:disabled){box-shadow:inset 0 0 0 3px var(--court),0 4px 0 var(--court)}
+  .opts button:disabled{cursor:default}
+  .opts button.ok{background:#D7F3E6;box-shadow:inset 0 0 0 3px var(--good),0 4px 0 var(--good)}
+  .opts button.no{background:#FCE0D8;box-shadow:inset 0 0 0 3px var(--bad),0 4px 0 var(--bad)}
+  .stars{display:flex;gap:6px;flex-wrap:wrap}
+  .stars svg{width:34px;height:34px}
+  .stars path{fill:var(--line);transition:fill .3s}
+  .stars .on path{fill:var(--sun)}
+  .round{margin:0;font:700 18px/1.2 var(--display);color:var(--ink-2)}
+  .fb{margin:0;min-height:3em;font-size:clamp(17px,1.5vw,21px);line-height:1.4;font-weight:700}
+  .fb.ok{color:var(--good)} .fb.no{color:var(--bad)}
+  .medal{display:flex;align-items:center;gap:16px}
+  .medal i{flex:none;width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8 0 18%,transparent 19%),var(--m);box-shadow:inset 0 -6px 0 rgba(0,0,0,.15),0 0 0 6px var(--card);display:grid;place-items:center;font:800 30px/1 var(--display);color:var(--ink);font-style:normal}
+
+  /* finish */
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chips button{border:0;cursor:pointer;border-radius:999px;padding:6px 12px;background:var(--card);font-weight:700;font-size:15px;box-shadow:inset 0 0 0 2px var(--c)}
+  .hw{margin:0;padding:14px 18px;border-radius:16px;background:var(--ink);color:#E6EEFB;line-height:1.45;font-size:clamp(16px,1.35vw,19px)}
+  .hw b{color:var(--sun);font-family:var(--display)}
+
+  /* bottom nav */
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .nav button{border:0;cursor:pointer;border-radius:14px;padding:12px 20px;font:800 17px/1 var(--display);background:var(--card);box-shadow:inset 0 0 0 2px var(--line)}
+  .nav button.next{background:var(--ink);color:#FFF6DE;box-shadow:none}
+  .nav button:disabled{opacity:.4;cursor:default}
+  .hint{font-size:14px;color:var(--ink-2);text-align:center}
+
+  @media (max-width:820px){
+    .slide{grid-template-columns:minmax(0,1fr);align-items:start;align-content:start}
+    .slide .stage,.slide .gright{order:-1}
+    .stage,.game .stage{max-width:100%}
+    .hint{display:none}
+    .brand span,.snd span{display:none}
+    .snd{padding:6px}
+    .brand i{margin-right:20px}
+  }
+  @media (max-width:480px){
+    .opts{grid-template-columns:minmax(0,1fr)}
+    .opts button{min-height:52px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .slide:not([hidden]),.done{animation:none}
+  }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><i aria-hidden="true"></i><span>Руханка вдома 7</span></div>
+    <nav class="prog" id="prog" aria-label="Слайди"></nav>
+    <button type="button" class="snd" id="snd" aria-pressed="true" aria-label="Звук увімкнено"></button>
+    <div class="num" id="num">1 / 23</div>
+  </header>
+  <main class="deck" id="deck"></main>
+  <footer class="nav">
+    <button id="prev" type="button">← Назад</button>
+    <div class="hint">Гортай стрілками ← → або свайпом</div>
+    <button id="next" class="next" type="button">Далі →</button>
+  </footer>
+</div>
+
+<script>
+(() => {
+const NS = 'http://www.w3.org/2000/svg';
+
+/* ---------- sounds: festive music (synthesized, works offline) + little chimes ----------
+   Every exercise gets its own arrangement: tune × instrument × key × tempo, so the music never gets boring.
+   Tunes (public domain): «Щедрик» (М. Леонтович), «Jingle Bells» (J. Pierpont), «Тиха ніч» (F. Gruber, for the calm part). */
+const Sound = (() => {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let ctx = null, fx = null, noise = null, on = true, unlocked = false;
+  let run = null;          // the arrangement now playing: { cfg, out, timer, nextT, bar }
+  let want = null;         // the arrangement the current slide asks for
+  try { on = localStorage.getItem('ruhanka-music') !== 'off'; } catch (e) {}
+  const VOL = 0.16;
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  function init() {
+    if (ctx || !AC) return !!ctx;
+    ctx = new AC();
+    fx = ctx.createGain(); fx.gain.value = 0.35; fx.connect(ctx.destination);
+    noise = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return true;
+  }
+  const env = (e, t, peak, att, end) => {
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(peak, t + att);
+    e.gain.exponentialRampToValueAtTime(.0001, end);
+  };
+  function partials(out, m, t, len, vol, list) {
+    list.forEach(([k, g, dk]) => {
+      const o = ctx.createOscillator(), e = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = hz(m) * k;
+      env(e, t, vol * g, .005, t + len * dk);
+      o.connect(e); e.connect(out); o.start(t); o.stop(t + len + .05);
+    });
+  }
+  // instruments: (out, midi, time, note length in s, volume)
+  const INSTR = {
+    bell: (out, m, t, ln, v) => partials(out, m, t, Math.max(.5, ln * 2.2), v, [[1, 1, 1], [2, .28, .7], [3.01, .12, .55], [4.2, .05, .5]]),
+    box: (out, m, t, ln, v) => partials(out, m + 12, t, Math.max(.35, ln * 1.4), v * .8, [[1, 1, 1], [4, .18, .4], [6.3, .06, .3]]),
+    marimba: (out, m, t, ln, v) => partials(out, m, t, .45, v * 1.1, [[1, 1, 1], [4, .12, .3], [10, .03, .15]]),
+    flute: (out, m, t, ln, v) => {
+      const o = ctx.createOscillator(), e = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+      o.type = 'triangle'; o.frequency.value = hz(m);
+      lfo.frequency.value = 5; lg.gain.value = hz(m) * .006; lfo.connect(lg); lg.connect(o.frequency);
+      const end = t + Math.max(.25, ln * .95);
+      e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(v * .7, t + .05);
+      e.gain.setValueAtTime(v * .7, end - .08); e.gain.linearRampToValueAtTime(0, end);
+      o.connect(e); e.connect(out); o.start(t); o.stop(end + .02); lfo.start(t); lfo.stop(end + .02);
+    },
+  };
+  function bass(out, m, t, len) {
+    const o = ctx.createOscillator(), e = ctx.createGain();
+    o.type = 'triangle'; o.frequency.value = hz(m);
+    env(e, t, .3, .03, t + len);
+    o.connect(e); e.connect(out); o.start(t); o.stop(t + len + .05);
+  }
+  function jingle(out, t, vol) {
+    const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), e = ctx.createGain();
+    src.buffer = noise; f.type = 'highpass'; f.frequency.value = 7000;
+    e.gain.setValueAtTime(vol, t); e.gain.exponentialRampToValueAtTime(.0001, t + .09);
+    src.connect(f); f.connect(e); e.connect(out); src.start(t); src.stop(t + .12);
+  }
+
+  // tunes: bars of [[midi, start, length] (in eighths)], bass note; `len` = eighths per bar, `beats` = where the jingle hits
+  const M = (a, b, c, d) => [[a, 0, 2], [b, 2, 1], [c, 3, 1], [d, 4, 2]];
+  const R = (a, b, c, d, e) => [[a, 0, 1], [b, 1, 1], [c, 2, 1], [d, 3, 1], [e, 4, 2]];
+  const LOW = [43, 41, 39, 38];
+  const SHCHEDRYK = { len: 6, eighth: .24, beats: [0, 2, 4], bars: [
+    ...LOW.map(b => [M(70, 69, 70, 67), b]), ...LOW.map(b => [M(70, 69, 70, 67), b]),
+    ...LOW.map(b => [M(74, 72, 74, 70), b]),
+    [R(79, 79, 79, 77, 75), 39], [R(74, 74, 74, 72, 70), 46], [R(72, 72, 72, 74, 72), 41], [M(67, 69, 70, 67), 43],
+    [R(79, 79, 79, 77, 75), 39], [R(74, 74, 74, 72, 70), 46], [R(72, 72, 72, 74, 72), 41], [[[67, 0, 6]], 43],
+  ] };
+  const J = {
+    a: [[76, 0, 2], [76, 2, 2], [76, 4, 4]],
+    b: [[76, 0, 2], [79, 2, 2], [72, 4, 3], [74, 7, 1]],
+    c: [[76, 0, 8]],
+    d: [[77, 0, 2], [77, 2, 2], [77, 4, 3], [77, 7, 1]],
+    e: [[77, 0, 2], [76, 2, 2], [76, 4, 2], [76, 6, 1], [76, 7, 1]],
+    f: [[76, 0, 2], [74, 2, 2], [74, 4, 2], [76, 6, 2]],
+    g: [[74, 0, 4], [79, 4, 4]],
+    h: [[79, 0, 2], [79, 2, 2], [77, 4, 2], [74, 6, 2]],
+    i: [[72, 0, 8]],
+  };
+  const JINGLE = { len: 8, eighth: .2, beats: [0, 2, 4, 6], bars: [
+    [J.a, 48], [J.a, 48], [J.b, 48], [J.c, 48], [J.d, 41], [J.e, 48], [J.f, 50], [J.g, 43],
+    [J.a, 48], [J.a, 48], [J.b, 48], [J.c, 48], [J.d, 41], [J.e, 48], [J.h, 43], [J.i, 48],
+  ] };
+  const SN = {
+    a: [[67, 0, 1.5], [69, 1.5, .5], [67, 2, 1], [64, 3, 3]],
+    b: [[74, 0, 2], [74, 2, 1], [71, 3, 3]],
+    c: [[72, 0, 2], [72, 2, 1], [67, 3, 3]],
+    d: [[69, 0, 2], [69, 2, 1], [72, 3, 1.5], [71, 4.5, .5], [69, 5, 1]],
+    e: [[74, 0, 2], [74, 2, 1], [77, 3, 1.5], [74, 4.5, .5], [71, 5, 1]],
+    f: [[72, 0, 3], [76, 3, 3]],
+    g: [[72, 0, 1], [67, 1, 1], [64, 2, 1], [67, 3, 1.5], [65, 4.5, .5], [62, 5, 1]],
+    h: [[60, 0, 6]],
+  };
+  const SILENT = { len: 6, eighth: .3, beats: [], bars: [
+    [SN.a, 48], [SN.a, 48], [SN.b, 43], [SN.c, 48], [SN.d, 41], [SN.a, 48], [SN.d, 41], [SN.a, 48],
+    [SN.e, 43], [SN.f, 48], [SN.g, 43], [SN.h, 48],
+  ] };
+
+  // arrangement for a slide: neighbours always differ in tune or instrument, key and tempo
+  const KEYS = [0, 3, -2, 5, 2, -4];
+  const SPEED = [1, .9, 1.1, .95, 1.05];
+  const LIVELY = [[SHCHEDRYK, 'bell'], [JINGLE, 'box'], [SHCHEDRYK, 'marimba'], [JINGLE, 'bell'], [SHCHEDRYK, 'flute'], [JINGLE, 'marimba'], [SHCHEDRYK, 'box'], [JINGLE, 'flute']];
+  const CALM = [[SILENT, 'box'], [SILENT, 'flute'], [SILENT, 'bell']];
+  function arrangement(n, calm) {
+    const [tune, instr] = calm ? CALM[n % CALM.length] : LIVELY[n % LIVELY.length];
+    return { id: n + (calm ? 'c' : 'l'), tune, instr, key: KEYS[n % KEYS.length] + (calm ? -2 : 0),
+             speed: calm ? 1 : SPEED[n % SPEED.length], bells: !calm && n % 3 !== 2 };
+  }
+
+  function schedule(r) {
+    const { tune, instr, key, speed, bells } = r.cfg, E = tune.eighth / speed, BAR = E * tune.len, play = INSTR[instr];
+    while (r.nextT < ctx.currentTime + 0.4) {
+      const [notes, b] = tune.bars[r.bar % tune.bars.length];
+      for (const [m, st, ln] of notes) play(r.out, m + key, r.nextT + st * E, ln * E, .5);
+      bass(r.out, b + key, r.nextT, BAR * .95);
+      if (bells) tune.beats.forEach((k, q) => jingle(r.out, r.nextT + k * E, q ? .05 : .08));
+      r.nextT += BAR; r.bar++;
+    }
+  }
+  function fadeOut(r) {
+    if (!r) return;
+    clearInterval(r.timer);
+    const t = ctx.currentTime;
+    r.out.gain.cancelScheduledValues(t); r.out.gain.setValueAtTime(r.out.gain.value, t); r.out.gain.linearRampToValueAtTime(0, t + .5);
+    setTimeout(() => { try { r.out.disconnect(); } catch (e) {} }, 1500);
+  }
+  function play() {
+    if (!on || !init()) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    const cfg = want || arrangement(0, false);
+    if (run && run.cfg.id === cfg.id) return;
+    fadeOut(run);
+    const out = ctx.createGain(), t = ctx.currentTime;
+    out.gain.value = 0; out.connect(ctx.destination);
+    out.gain.setValueAtTime(0, t + (run ? .35 : 0)); out.gain.linearRampToValueAtTime(VOL, t + (run ? 1.2 : 1.5));
+    const r = run = { cfg, out, nextT: t + (run ? .4 : .12), bar: 0 };
+    schedule(r); r.timer = setInterval(() => schedule(r), 100);
+  }
+  function quiet() { if (ctx) fadeOut(run); run = null; }
+  const chime = (notes, step = .09, len = .9) => {
+    if (!on || !init() || ctx.state !== 'running') return;
+    const t = ctx.currentTime + .02;
+    notes.forEach((m, i) => INSTR.bell(fx, m, t + i * step, len / 2.2, .6));
+  };
+  function tick() {
+    if (!on || !init() || ctx.state !== 'running') return;
+    const t = ctx.currentTime + .01, o = ctx.createOscillator(), e = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = hz(88);
+    env(e, t, .35, .005, t + .18);
+    o.connect(e); e.connect(fx); o.start(t); o.stop(t + .2);
+  }
+  // browsers allow audio only after the first tap / key press
+  const unlock = () => { if (!unlocked) { unlocked = true; play(); } };
+  ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, unlock, { capture: true, passive: true }));
+  document.addEventListener('visibilitychange', () => document.hidden ? quiet() : unlocked && play());
+  return {
+    get on() { return on; },
+    get ready() { return false; },
+    set(v) { on = v; try { localStorage.setItem('ruhanka-music', v ? 'on' : 'off'); } catch (e) {} v ? play() : quiet(); },
+    // slide n (0 = cover/game/finish); calm = the cool-down part
+    scene(n, calm) { want = arrangement(n, calm); if (unlocked && on) play(); },
+    // no voice: every count gets a soft little bell
+    start() { return 0; },
+    count() { tick(); }, cue() { tick(); }, praise() { tick(); },
+    finish() { chime([79, 83, 86, 91], .1, 1.2); },
+    right() { chime([84, 88, 91]); },
+    wrong() { chime([62, 58], .16, .6); },
+    medal(gold) { chime(gold ? [72, 76, 79, 84, 88, 91] : [72, 76, 79, 84], .12, 1.4); },
+    lessonEnd() { chime([67, 72, 76, 79, 84], .14, 1.6); },
+    stop() {},
+    test() {},
+  };
+})();
+const SECS = [
+  { name: 'Розминка', c: '#FFB020', ink: '#8A5600' },
+  { name: 'Основна частина', c: '#FF6B4A', ink: '#B83A1E' },
+  { name: 'Заключна частина', c: '#2DB37E', ink: '#137450' },
+];
+const COURT = { c: '#2F6FDB', ink: '#1F4FA8' };
+
+/* ---------- poses ----------
+   Angles in degrees. Limbs: 0 = hanging down, positive = clockwise on screen.
+   Front view: l* = limb on viewer's left. Side view: hero faces right, l* = near side. */
+const DF = { x:0, air:0, rot:0, sp:0, arch:0, hd:0, la:7, le:0, ra:-7, re:0, lh:4, lk:0, rh:-4, rk:0 };
+const DS = { x:0, air:0, rot:0, sp:0, arch:0, hd:0, la:3, le:-10, ra:-5, re:-10, lh:-3, lk:2, rh:3, rk:2 };
+const HS = { la:28, le:-112, ra:28, re:-112 };                                            // hands on hips, side
+const HF = { la:45, le:-95, ra:-45, re:95 };                                              // hands on hips, front
+const ELB = { le:-165, re:-165 };                                                         // fingertips on shoulders, side
+const KNEEL = { sp:65, la:-65, ra:-65, le:0, re:0, lh:0, lk:90, rh:0, rk:90, hd:-20 };   // on hands and knees, side
+const PLANK = { rot:61, la:-61, ra:-61, le:0, re:0, lh:0, lk:0, rh:0, rk:0, hd:-10 };    // straight-arm plank, side
+const LIE = { rot:-90, la:-2, le:0, ra:-2, re:0, lh:0, lk:0, rh:0, rk:0 };               // on the back, arms along the body
+const CROUCH = { lh:-40, lk:70, rh:-40, rk:70, sp:25, la:45, le:-10, ra:45, re:-10, hd:-10 }; // ready to jump, arms back
+const ONSIDE = (left, up) => left                                                          // lying on the side, front view
+  ? { rot:-90, la:180, le:0, ra:10, re:0, lh:0, lk:0, rh:up ? -42 : 0, rk:0 }
+  : { rot:90, ra:-180, re:0, la:-10, le:0, rh:0, rk:0, lh:up ? 42 : 0, lk:0 };
+const QUAD = (near, w) => near                                                             // standing quad stretch, side
+  ? { lh:5, lk:160, la:12, le:0, rh:2, rk:2, ra:-80 - w, re:0 }
+  : { rh:5, rk:160, ra:12, re:0, lh:2, lk:2, la:-80 - w, le:0 };
+const SHOULDER = (left, w) => left                                                        // arm across the chest, front
+  ? { la:-80, le:0, ra:10 + w, re:-158 }
+  : { ra:80, re:0, la:-10 - w, le:158 };
+
+const PRONE = { rot:90, la:-182, le:0, ra:-182, re:0, lh:0, lk:0, rh:0, rk:0, hd:-12 };  // on the tummy, arms forward, side
+const HOOK = { ...LIE, lh:-45, lk:105, rh:-45, rk:105 };                                 // on the back, knees bent, side
+const SIT = { sp:-25, lh:-90, lk:0, rh:-90, rk:0, la:40, le:0, ra:40, re:0, hd:5 };      // sitting, leaning back on the hands, side
+const TRI = (left, w) => left                                                             // hand behind the head, front
+  ? { la:150, le:83 + w, ra:91, re:70 }
+  : { ra:-150, re:-83 - w, la:-91, le:-70 };
+const HAM = (near, w) => near                                                             // lean to a straight leg, side
+  ? { lh:-30, lk:0, rh:8, rk:35, sp:40 + w, la:-40, le:-8, ra:-40, re:-8, hd:-8 }
+  : { rh:-30, rk:0, lh:8, lk:35, sp:40 + w, la:-40, le:-8, ra:-40, re:-8, hd:-8 };
+const CALF = (near, w) => near                                                            // calf stretch, side
+  ? { lh:-35, lk:40, rh:25, rk:0, sp:15 + w, la:-40, le:-15, ra:-40, re:-15, x:-8 }
+  : { rh:-35, rk:40, lh:25, lk:0, sp:15 + w, la:-40, le:-15, ra:-40, re:-15, x:-8 };
+const SQF = { ...HF, lh:32, lk:-34, rh:-32, rk:34 };                                       // squat, hands on hips, front
+const LUNGE = near => near                                                                 // back lunge, side
+  ? { ...HS, x:-14, lh:-80, lk:80, rh:20, rk:58 }
+  : { ...HS, x:-14, rh:-80, rk:80, lh:20, lk:58 };
+const SIDEBEND = (left, w) => left                                                         // side stretch, arm over the head, front
+  ? { sp:-18 - w, ra:-162, re:-25, la:45, le:-95, lh:4, rh:-4 }
+  : { sp:18 + w, la:162, le:25, ra:-45, re:95, lh:4, rh:-4 };
+const EX = [
+  { sec:0, name:'Крок уперед — назад', short:'Крок уперед', view:'side', dur:600, per:2, dose:{n:16,u:'кроків',note:'по 8 кожною ногою'},
+    steps:['Стань рівно, руки на пояс.','Зроби крок уперед.','Повернись назад і зміни ногу.'],
+    tip:'Крок невеликий, спина рівна.',
+    poses:[{...HS},{...HS,x:10,lh:-30,lk:3,rh:12,rk:3},{...HS},{...HS,x:10,rh:-30,rk:3,lh:12,lk:3}] },
+  { sec:0, name:'Руки вперед — вгору', short:'Руки вперед', view:'side', dur:600, per:1, dose:{n:8,u:'разів'},
+    steps:['Стань рівно, руки вниз.','Руки вперед.','Руки вгору — і через «вперед» униз.'],
+    tip:'Руки прямі, як стрілки годинника.',
+    poses:[{la:3,le:0,ra:-5,re:0},{la:-90,le:0,ra:-90,re:0},{la:-178,le:0,ra:-178,re:0},{la:-90,le:0,ra:-90,re:0}] },
+  { sec:0, name:'Крок убік — руки вгору', short:'Крок убік', view:'front', dur:600, per:2, dose:{n:12,u:'разів',note:'по 6 у кожен бік'},
+    steps:['Стань рівно, ноги разом.','Зроби крок убік і підніми руки вгору.','Пристав ногу, опусти руки й крокуй в інший бік.'],
+    tip:'Руки прямі, тягнись до стелі.',
+    poses:[{},{x:-12,lh:22,rh:-3,la:172,le:0,ra:-172,re:0},{},{x:12,rh:-22,lh:3,la:172,le:0,ra:-172,re:0}] },
+  { sec:0, name:'Коліно вбік', view:'front', dur:550, per:2, dose:{n:12,u:'разів',note:'по 6 кожною ногою'},
+    steps:['Руки на пояс.','Підніми зігнуте коліно вбік.','Опусти й зміни ногу.'],
+    tip:'Стій рівно, не хитайся.',
+    poses:[{...HF},{...HF,lh:80,lk:-85,rh:-3},{...HF},{...HF,rh:-80,rk:85,lh:3}] },
+  { sec:0, name:'Оплески над головою', short:'Оплески вгорі', view:'front', dur:450, per:1, dose:{n:12,u:'оплесків'},
+    steps:['Стань рівно, руки вниз.','Через сторони підніми руки вгору.','Плесни в долоні над головою й опусти руки.'],
+    tip:'Руки прямі, плескай голосно!',
+    poses:[{},{la:190,le:0,ra:-190,re:0}] },
+
+  { sec:1, name:'Стрибки на носочках', short:'На носочках', view:'front', dur:280, per:1, dose:{n:20,u:'стрибків'},
+    steps:['Руки на пояс, ноги разом.','Стрибай невисоко на носочках.','Приземляйся м’яко, як м’ячик.'],
+    tip:'П’ятки не торкаються підлоги.',
+    poses:[{...HF,lh:3,rh:-3},{...HF,lh:3,rh:-3,air:14}] },
+  { sec:1, name:'Випад назад', view:'side', dur:750, per:2, dose:{n:12,u:'випадів',note:'по 6 кожною ногою'},
+    steps:['Руки на пояс.','Зроби великий крок назад і зігни обидві ноги.','Повернись і зміни ногу.'],
+    tip:'Заднє коліно майже торкається підлоги, спина рівна.',
+    poses:[{...HS},{...LUNGE(true)},{...HS},{...LUNGE(false)}] },
+  { sec:1, name:'Присід і мах убік', short:'Присід і мах', view:'front', dur:650, per:2, dose:{n:10,u:'разів',note:'по 5 кожною ногою'},
+    steps:['Руки на пояс.','Присядь.','Встань і махни ногою вбік. Наступного разу — іншою.'],
+    tip:'Нога пряма, носок дивиться вперед.',
+    poses:[{...SQF},{...HF,lh:42,lk:0,rh:-3},{...SQF},{...HF,rh:-42,rk:0,lh:3}] },
+  { sec:1, name:'Рука й нога навхрест', short:'Навхрест', view:'side', dur:900, per:2, dose:{n:12,u:'разів',note:'по 6 на кожен бік'},
+    steps:['Стань на долоні й коліна.','Витягни вперед одну руку, а назад — протилежну ногу.','Повернись і зміни руку й ногу.'],
+    tip:'Тримай рівновагу, спина рівна, як столик.',
+    poses:[{...KNEEL},{...KNEEL,la:-155,le:0,rh:90,rk:0},{...KNEEL},{...KNEEL,ra:-155,re:0,lh:90,lk:0}] },
+  { sec:1, name:'Підйоми ніг на животі', short:'Ноги на животі', view:'side', dur:800, per:2, dose:{n:12,u:'разів',note:'по 6 кожною ногою'},
+    steps:['Ляж на живіт, руки витягни вперед.','Підніми пряму ногу вгору.','Опусти й підніми іншу.'],
+    tip:'Ногу піднімай невисоко, коліно не згинай.',
+    poses:[{...PRONE},{...PRONE,lh:28},{...PRONE},{...PRONE,rh:28}] },
+  { sec:1, name:'Скручування', view:'side', dur:900, per:1, dose:{n:10,u:'разів'},
+    steps:['Ляж на спину, зігни коліна.','Підніми голову й плечі, руки тягни до колін.','Повільно ляж назад.'],
+    tip:'Поперек притиснутий до підлоги, шия розслаблена.',
+    poses:[{...HOOK},{...HOOK,sp:32,la:-32,ra:-32,hd:-12}] },
+  { sec:1, name:'Руки до ніг лежачи', short:'Руки до ніг', view:'side', dur:900, per:1, dose:{n:10,u:'разів'},
+    steps:['Ляж на спину й підніми прямі ноги вгору.','Підніми плечі й потягнись руками до носочків.','Повільно опусти плечі. Ноги весь час угорі.'],
+    tip:'Важко? Трішки зігни коліна.',
+    poses:[{...LIE,lh:-90,rh:-90},{...LIE,lh:-90,rh:-90,sp:35,la:-95,ra:-95,hd:-10}] },
+  { sec:1, name:'Підйоми ніг сидячи', short:'Ноги сидячи', view:'side', dur:700, per:2, dose:{n:12,u:'разів',note:'по 6 кожною ногою'},
+    steps:['Сядь, ноги прямі, руками впрись позаду.','Підніми одну пряму ногу.','Опусти й підніми іншу.'],
+    tip:'Носочок тягни до себе.',
+    poses:[{...SIT},{...SIT,lh:-128},{...SIT},{...SIT,rh:-128}] },
+  { sec:1, name:'Підтягни коліна сидячи', short:'Коліна сидячи', view:'side', dur:800, per:1, dose:{n:10,u:'разів'},
+    steps:['Сядь, руками впрись позаду, ноги трішки підніми.','Підтягни коліна до грудей.','Випрями ноги вперед, не опускаючи на підлогу.'],
+    tip:'Важко? Опускай ноги на підлогу щоразу.',
+    poses:[{...SIT,lh:-100,rh:-100},{...SIT,sp:-15,lh:-150,lk:120,rh:-150,rk:120}] },
+
+  { sec:2, name:'Бокова розтяжка', view:'front', swap:10, dur:1000, timed:true, dose:{n:20,u:'секунд',note:'по 10 на кожен бік'},
+    steps:['Одну руку на пояс, другу підніми вгору.','Потягнись рукою над головою в бік.','Тримай. Коли герой зміниться — зміни бік.'],
+    tip:'Нахиляйся вбік, а не вперед.',
+    poses:Array.from({length:20},(_,i)=>SIDEBEND(i<10,(i%2)*4)) },
+  { sec:2, name:'Розтяжка за головою', short:'Рука за голову', view:'front', swap:10, dur:1000, timed:true, dose:{n:20,u:'секунд',note:'по 10 на кожну руку'},
+    steps:['Підніми руку й зігни її — долоня за головою.','Другою рукою легенько притисни лікоть.','Тримай. Коли герой зміниться — зміни руку.'],
+    tip:'Голову не нахиляй, дихай спокійно.',
+    poses:Array.from({length:20},(_,i)=>TRI(i<10,(i%2)*6)) },
+  { sec:2, name:'Руки в замок за спиною', short:'Руки в замок', view:'side', dur:1000, timed:true, dose:{n:15,u:'секунд'},
+    steps:['Заведи руки за спину й зціпи пальці в замок.','Випрями руки й трішки підніми їх назад.','Груди вперед, тримай.'],
+    tip:'Не нахиляйся вперед, плечі опущені.',
+    poses:[{la:42,le:0,ra:42,re:0,hd:-6},{la:52,le:0,ra:52,re:0,hd:-8}] },
+  { sec:2, name:'Нахил до ноги', view:'side', swap:10, dur:1000, timed:true, dose:{n:20,u:'секунд',note:'по 10 на кожну ногу'},
+    steps:['Постав одну ногу вперед на п’ятку.','Другу ногу зігни, руки поклади на пряму ногу.','Нахились уперед і тримай. Коли герой зміниться — зміни ногу.'],
+    tip:'Спина рівна, тягнись грудьми до ноги.',
+    poses:Array.from({length:20},(_,i)=>HAM(i<10,(i%2)*5)) },
+  { sec:2, name:'Розтяжка литки', view:'side', swap:10, dur:1000, timed:true, dose:{n:20,u:'секунд',note:'по 10 на кожну ногу'},
+    steps:['Зроби великий крок уперед і зігни передню ногу.','Задня нога пряма, п’ятка притиснута до підлоги.','Тримай. Коли герой зміниться — зміни ногу.'],
+    tip:'Відчуй, як тягнеться литка.',
+    poses:Array.from({length:20},(_,i)=>CALF(i<10,(i%2)*4)) },
+  { sec:2, name:'Вдих угору — видих униз', short:'Вдих угору', view:'side', breath:true, dur:2200, per:1, dose:{n:5,u:'разів'},
+    steps:['Нахились, руки вниз до підлоги.','Вдих — повільно випрямись, руки вгору.','Видих — повільно нахились, руки вниз.'],
+    tip:'Рухайся повільно, дихай глибоко.',
+    poses:[{sp:70,la:-70,le:0,ra:-70,re:0,hd:-10,lk:4,rk:4},{la:-176,le:0,ra:-176,re:0}] },
+];
+const WAVE = { name:'Привіт', view:'front', dur:420, poses:[{ra:-150,re:-25},{ra:-150,re:25}] };
+const CHEER = { name:'Ура', view:'front', dur:380, poses:[{la:150,ra:-150,lh:6,rh:-6},{la:165,ra:-165,lh:14,rh:-14,air:30}] };
+
+/* ---------- kinematics ---------- */
+const TEMPO = 1.4; // reps are 40 % slower than in part 6: the kids need time to follow
+const RAD = Math.PI / 180, GY = 259;
+const dn = a => [-Math.sin(a*RAD), Math.cos(a*RAD)];
+const upv = a => [Math.sin(a*RAD), -Math.cos(a*RAD)];
+const add = (p, v, s) => [p[0] + v[0]*s, p[1] + v[1]*s];
+
+function fk(p, front) {
+  const base = p.rot + p.sp, u = upv(base), lp = [u[1], -u[0]];
+  const pu = upv(p.rot), plp = [pu[1], -pu[0]];
+  const hip = [0, 0], neck = add(hip, u, 70), sh = add(hip, u, 60);
+  const sw = front ? 15 : 0, hw = front ? 9 : 0;
+  const shL = add(sh, lp, sw), shR = add(sh, lp, -sw);
+  const hL = add(hip, plp, hw), hR = add(hip, plp, -hw);
+  const eL = add(shL, dn(base + p.la), 38), wL = add(eL, dn(base + p.la + p.le), 34);
+  const eR = add(shR, dn(base + p.ra), 38), wR = add(eR, dn(base + p.ra + p.re), 34);
+  const aL = p.rot + p.lh, aR = p.rot + p.rh;
+  const kL = add(hL, dn(aL), 44), fL = add(kL, dn(aL + p.lk), 42);
+  const kR = add(hR, dn(aR), 44), fR = add(kR, dn(aR + p.rk), 42);
+  const hdA = base + p.hd, head = add(neck, upv(hdA), 25);
+  return { hip, neck, u, lp, shL, shR, hL, hR, eL, wL, eR, wR, kL, fL, kR, fR, head, hdA,
+           sL: aL + p.lk, sR: aR + p.rk,
+           pts: [[hip,13],[neck,13],[head,22],[eL,6],[wL,7],[eR,6],[wR,7],[kL,8],[kR,8],[fL,7],[fR,7]] };
+}
+
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * f));
+  return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+const ease = k => (1 - Math.cos(Math.PI * k)) / 2;
+
+const SKIN = '#F1C29C', SKIN_D = '#D9A57E', HAIR = '#B5642A', SHORTS = '#C8323C', SHORTS_D = '#9E2530', SHOE = '#6B3F1F';
+const TUNIC = '#2E9D5A', HAT = '#D7263D', FUR = '#FFFFFF';
+
+class Fig {
+  constructor(svg, ex, shirt) {
+    shirt = TUNIC; // the elf always wears his green tunic
+    this.ex = ex; this.front = ex.view === 'front';
+    this.poses = ex.poses.map(p => ({ ...(this.front ? DF : DS), ...p }));
+    this.snap = ex.loop === 'snap';
+    this.nT = this.snap ? this.poses.length - 1 : this.poses.length;
+    this.dur = ex.dur * (ex.timed || ex.breath || !ex.dose ? 1 : TEMPO); this.per = ex.per || 1;
+    this.t = 0; this.playing = true; this.shown = -1; this.onCount = null;
+    let mn = 1e9, mx = -1e9;
+    for (const p of this.poses) for (const [pt] of fk(p, this.front).pts) { mn = Math.min(mn, pt[0]); mx = Math.max(mx, pt[0]); }
+    this.bx = 200 - (mn + mx) / 2;
+
+    const layer = svg.querySelector('.figlayer');
+    layer.innerHTML = '';
+    const mk = (tag, at, parent = layer) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+    const ln = (col, w, parent) => mk('line', { stroke: col, 'stroke-width': w, 'stroke-linecap': 'round' }, parent);
+    const shirtD = shade(shirt, .8);
+
+    this.top = !!ex.top;
+    if (this.top) {
+      // seen from above: the floor and the mat cover the whole stage, the hero lies centred on the mat
+      const boards = Array.from({ length: 9 }, (_, i) => `M${i * 50} 0V300`).join('') + 'M25 90H75M125 210H175M275 60H325M325 240H375M225 140H275';
+      mk('rect', { width: 400, height: 300, fill: '#E3B077' });
+      mk('path', { d: boards, stroke: '#D29A5E', 'stroke-width': 2 });
+      mk('rect', { x: 102, y: 16, width: 196, height: 250, rx: 16, fill: '#3C6FD1' });
+      mk('rect', { x: 110, y: 24, width: 180, height: 234, rx: 11, fill: 'none', stroke: '#6D97EA', 'stroke-width': 3 });
+      mk('circle', { cx: 352, cy: 236, r: 20, fill: '#FF6B4A' });
+      mk('path', { d: 'M334 228Q352 240 370 228M334 244Q352 256 370 244', stroke: '#FAFCFF', 'stroke-width': 2.5, fill: 'none' });
+      let mnY = 1e9, mxY = -1e9;
+      for (const [pt, r] of fk(this.poses[0], true).pts) { mnY = Math.min(mnY, pt[1] - r); mxY = Math.max(mxY, pt[1] + r); }
+      this.by = 141 - (mnY + mxY) / 2;
+    }
+    this.shadow = mk('ellipse', { ry: 4, fill: this.top ? 'none' : 'rgba(19,42,79,.2)' });
+    const arm = (dark) => ({ u: ln(dark ? shirtD : shirt, 13), f: ln(dark ? SKIN_D : SKIN, 10), h: mk('circle', { r: 6, fill: dark ? SKIN_D : SKIN }) });
+    const leg = (dark) => {
+      // striped red-and-white stockings
+      const t = ln(dark ? SHORTS_D : SHORTS, 17), s = ln(dark ? '#DCE3EE' : FUR, 12), s2 = ln(dark ? SHORTS_D : SHORTS, 12);
+      s2.setAttribute('stroke-dasharray', '5 6'); s2.setAttribute('stroke-linecap', 'butt');
+      return { t, s, s2, f: ln(SHOE, 11) };
+    };
+    const torso = () => { this.torso = mk('path', { fill: 'none', stroke: shirt, 'stroke-width': 30, 'stroke-linecap': 'round' }); this.pelvis = mk('circle', { r: 17, fill: SHORTS }); this.belt = this.pants(mk); this.collar = mk('circle', { r: 10, fill: FUR }); };
+    const head = () => {
+      const g = this.head = mk('g', {});
+      const side = !this.front;
+      // pointy elf ears (front view: behind the face)
+      if (!side) for (const sx of [-1, 1]) mk('path', { d: `M${sx * 16} -5L${sx * 31} -16L${sx * 18} 8Z`, fill: SKIN, stroke: SKIN_D, 'stroke-width': 1.5, 'stroke-linejoin': 'round' }, g);
+      mk('circle', { cx: side ? -3 : 0, cy: -4, r: 22, fill: HAIR }, g);
+      mk('circle', { cx: side ? 2 : 0, cy: 2, r: 20, fill: SKIN }, g);
+      if (side) {
+        mk('circle', { cx: 10, cy: 0, r: 2.6, fill: '#132A4F' }, g);
+        mk('circle', { cx: 7, cy: 7, r: 3.2, fill: '#F28B82', opacity: .55 }, g);
+        mk('path', { d: 'M9 10 Q13 13 17 9', fill: 'none', stroke: '#132A4F', 'stroke-width': 2.2, 'stroke-linecap': 'round' }, g);
+        mk('path', { d: 'M-18 -6 Q-28 6 -22 16', fill: 'none', stroke: HAIR, 'stroke-width': 7, 'stroke-linecap': 'round' }, g);
+      } else if (this.top) {
+        // eyes closed: resting
+        mk('path', { d: 'M-10 0Q-7 3 -4 0M4 0Q7 3 10 0', fill: 'none', stroke: '#132A4F', 'stroke-width': 2.2, 'stroke-linecap': 'round' }, g);
+        mk('circle', { cx: -12, cy: 7, r: 3.2, fill: '#F28B82', opacity: .55 }, g);
+        mk('circle', { cx: 12, cy: 7, r: 3.2, fill: '#F28B82', opacity: .55 }, g);
+        mk('path', { d: 'M-5 9 Q0 12 5 9', fill: 'none', stroke: '#132A4F', 'stroke-width': 2.2, 'stroke-linecap': 'round' }, g);
+      } else {
+        mk('circle', { cx: -7, cy: 0, r: 2.6, fill: '#132A4F' }, g);
+        mk('circle', { cx: 7, cy: 0, r: 2.6, fill: '#132A4F' }, g);
+        mk('circle', { cx: -12, cy: 7, r: 3.2, fill: '#F28B82', opacity: .55 }, g);
+        mk('circle', { cx: 12, cy: 7, r: 3.2, fill: '#F28B82', opacity: .55 }, g);
+        mk('path', { d: 'M-6 8 Q0 13 6 8', fill: 'none', stroke: '#132A4F', 'stroke-width': 2.2, 'stroke-linecap': 'round' }, g);
+      }
+      if (side) mk('path', { d: 'M-3 -2L-19 -15L-1 7Z', fill: SKIN, stroke: SKIN_D, 'stroke-width': 1.5, 'stroke-linejoin': 'round' }, g);
+      // red hat with white fur and a pompom; the tip flops backwards
+      const hg = mk('g', side ? { transform: 'scale(-1 1)' } : {}, g);
+      mk('path', { d: 'M-23 -9Q-16 -46 14 -51Q31 -53 37 -38Q24 -42 18 -32Q22 -20 23 -9Z', fill: HAT }, hg);
+      mk('path', { d: 'M-8 -24Q2 -44 22 -46', fill: 'none', stroke: '#F0525F', 'stroke-width': 3, 'stroke-linecap': 'round' }, hg);
+      mk('rect', { x: -25, y: -16, width: 50, height: 11, rx: 5.5, fill: FUR }, hg);
+      mk('circle', { cx: 38, cy: -38, r: 7, fill: FUR }, hg);
+    };
+    if (this.front) {
+      // arms go over the head so hands stay visible (ex.behind: a hand placed behind the head)
+      this.legL = leg(false); this.legR = leg(false); torso();
+      if (ex.behind) { this.armL = arm(false); this.armR = arm(false); head(); }
+      else { head(); this.armL = arm(false); this.armR = arm(false); }
+    } else {
+      this.armR = arm(true); this.legR = leg(true); this.legL = leg(false); torso(); head(); this.armL = arm(false);
+    }
+    if (ex.rev) {
+      // direction arrows around each shoulder + a label that flips after ex.rev reps
+      const mid = 'arw' + Math.random().toString(36).slice(2, 8);
+      const defs = mk('defs', {});
+      const mrk = mk('marker', { id: mid, viewBox: '0 0 10 10', refX: 5, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto-start-reverse' }, defs);
+      mk('path', { d: 'M0 0L10 5L0 10z', fill: '#132A4F' }, mrk);
+      const arc = () => mk('path', { fill: 'none', stroke: '#132A4F', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-dasharray': '2 9', 'marker-end': `url(#${mid})` });
+      this.arcL = arc(); this.arcR = arc();
+      const g = mk('g', {});
+      this.revPill = mk('rect', { x: 92, y: 274, width: 216, height: 22, rx: 11, fill: '#132A4F' }, g);
+      this.revText = mk('text', { x: 200, y: 289.5, 'text-anchor': 'middle', fill: '#FFF6DE', 'font-size': 12, 'font-weight': 800, 'font-family': "Rubik, 'Trebuchet MS', Arial, sans-serif" }, g);
+      this.revShown = null;
+    }
+    if (ex.breath) {
+      // inhale while the pose opens up, exhale on the way back
+      const g = mk('g', {});
+      this.brPill = mk('rect', { x: 140, y: 272, width: 120, height: 22, rx: 11, fill: '#132A4F' }, g);
+      this.brText = mk('text', { x: 200, y: 287.5, 'text-anchor': 'middle', fill: '#FFF6DE', 'font-size': 12, 'font-weight': 800, 'font-family': "Rubik, 'Trebuchet MS', Arial, sans-serif" }, g);
+      this.brShown = null;
+    }
+    svg.setAttribute('aria-label', 'Анімація: ' + ex.name);
+    this.render();
+  }
+  // with ex.rev, the motion plays backwards for every second block of ex.rev reps
+  reversed() { return !!this.ex.rev && Math.floor(Math.floor(this.t / (this.dur * this.nT)) * this.per / this.ex.rev) % 2 === 1; }
+  pose() {
+    const cyc = this.dur * this.nT;
+    let T = this.t % cyc;
+    if (this.reversed()) T = (cyc - T) % cyc;
+    const i = Math.floor(T / this.dur);
+    const a = this.poses[i], b = this.poses[(i + 1) % this.poses.length], e = ease((T % this.dur) / this.dur);
+    const p = {}; for (const k in a) p[k] = a[k] + ((b[k] ?? a[k]) - a[k]) * e;
+    return p;
+  }
+  render() {
+    const p = this.pose(), k = fk(p, this.front);
+    let maxY = -1e9, mn = 1e9, mx = -1e9;
+    for (const [pt, r] of k.pts) { maxY = Math.max(maxY, pt[1] + r); mn = Math.min(mn, pt[0]); mx = Math.max(mx, pt[0]); }
+    const ox = this.bx + p.x, oy = this.top ? this.by : GY - maxY - p.air;
+    if (this.ex.breath) {
+      const inh = Math.floor(this.t / this.dur) % 2 === 0;
+      if (inh !== this.brShown) {
+        this.brShown = inh;
+        this.brText.textContent = inh ? 'Вдих…' : 'Видих…';
+        this.brPill.setAttribute('fill', inh ? '#137450' : '#132A4F');
+      }
+    }
+    const X = v => (v[0] + ox).toFixed(1), Y = v => (v[1] + oy).toFixed(1);
+    const L = (el, a, b) => { el.setAttribute('x1', X(a)); el.setAttribute('y1', Y(a)); el.setAttribute('x2', X(b)); el.setAttribute('y2', Y(b)); };
+    const C = (el, a) => { el.setAttribute('cx', X(a)); el.setAttribute('cy', Y(a)); };
+    const shoe = (el, f, ang) => {
+      const a = this.front ? add(f, dn(ang + 90), 4) : add(f, dn(ang - 90), -1);
+      const b = this.front ? add(f, dn(ang - 90), 4) : add(f, dn(ang - 90), 10);
+      L(el, a, b);
+    };
+    L(this.legL.t, k.hL, k.kL); L(this.legL.s, k.kL, k.fL); shoe(this.legL.f, k.fL, k.sL);
+    L(this.legR.t, k.hR, k.kR); L(this.legR.s, k.kR, k.fR); shoe(this.legR.f, k.fR, k.sR);
+    L(this.legL.s2, k.kL, k.fL); L(this.legR.s2, k.kR, k.fR);
+    L(this.armL.u, k.shL, k.eL); L(this.armL.f, k.eL, k.wL); C(this.armL.h, k.wL);
+    L(this.armR.u, k.shR, k.eR); L(this.armR.f, k.eR, k.wR); C(this.armR.h, k.wR);
+    const mid = add(k.hip, k.u, 35), ctrl = add(mid, k.lp, p.arch * 2);
+    // the tunic starts a bit above the hip, so the round pants cover its lower end in any leg position
+    const tb = add(k.hip, k.u, 8), bt = add(k.hip, k.u, 12);
+    this.torso.setAttribute('d', `M${X(tb)} ${Y(tb)} Q${X(ctrl)} ${Y(ctrl)} ${X(k.neck)} ${Y(k.neck)}`);
+    C(this.pelvis, k.hip);
+    this.belt.setAttribute('transform', `translate(${X(bt)} ${Y(bt)}) rotate(${(p.rot + p.sp).toFixed(1)})`);
+    C(this.collar, k.neck);
+    this.head.setAttribute('transform', `translate(${X(k.head)} ${Y(k.head)}) rotate(${k.hdA.toFixed(1)})`);
+    this.shadow.setAttribute('cx', ((mn + mx) / 2 + ox).toFixed(1));
+    this.shadow.setAttribute('cy', GY + 1);
+    this.shadow.setAttribute('rx', Math.max(16, (mx - mn) / 2 + 6 - p.air * .6).toFixed(1));
+    if (this.ex.rev) {
+      const rev = this.reversed(), r = 82;
+      // angles follow the limb convention: growing angle = clockwise on screen
+      const arcD = (c, from, to) => {
+        const a = add(c, dn(from), r), b = add(c, dn(to), r);
+        return `M${X(a)} ${Y(a)} A${r} ${r} 0 0 ${to > from ? 1 : 0} ${X(b)} ${Y(b)}`;
+      };
+      if (this.ex.arrows === 'hips') {
+        // one arrow around the front of the hips: left → right, or back when reversed
+        const a = add(k.hip, [-1, 0], 46), b = add(k.hip, [1, 0], 46);
+        const [s, f] = rev ? [b, a] : [a, b];
+        this.arcL.setAttribute('d', `M${X(s)} ${Y(s)} A46 20 0 0 ${rev ? 1 : 0} ${X(f)} ${Y(f)}`);
+        this.arcR.setAttribute('d', '');
+      } else {
+        this.arcL.setAttribute('d', rev ? arcD(k.shL, 150, 60) : arcD(k.shL, 60, 150));
+        this.arcR.setAttribute('d', rev ? arcD(k.shR, -150, -60) : arcD(k.shR, -60, -150));
+      }
+      if (rev !== this.revShown) {
+        this.revShown = rev;
+        this.revText.textContent = rev ? `Кола ${this.ex.rev + 1}–${this.ex.rev * 2}: тепер в інший бік!` : `Кола 1–${this.ex.rev}: крутимо ось так`;
+        this.revPill.setAttribute('fill', rev ? '#B83A1E' : '#132A4F');
+      }
+    }
+    if (this.onCount) {
+      const n = this.ex.timed ? Math.floor(this.t / 1000) : Math.floor(this.t / (this.dur * this.nT / this.per));
+      if (n !== this.shown) { const prev = this.shown; this.shown = n; this.onCount(n, prev); }
+    }
+  }
+  // belt with a gold buckle; it follows the tunic and hides where the tunic meets the round pants
+  pants(mk) {
+    const g = mk('g', {});
+    mk('rect', { x: -17, y: -3.5, width: 34, height: 7, rx: 2.5, fill: '#3B2416' }, g);
+    mk('rect', { x: this.front ? -5 : 7, y: -5, width: 10, height: 10, rx: 2, fill: 'none', stroke: '#FFC93C', 'stroke-width': 2.5 }, g);
+    return g;
+  }
+  reset() { this.t = 0; this.shown = -1; this.render(); }
+}
+
+/* ---------- stage markup ---------- */
+const rungs = Array.from({ length: 10 }, (_, i) => `M28 ${36 + i * 17}H80`).join('');
+const BACKDROP = `
+<rect width="400" height="214" fill="#DCE7F8"/>
+<rect y="178" width="400" height="36" fill="#CBDAF1"/>
+<path d="${rungs}" stroke="#D9A066" stroke-width="4" stroke-linecap="round"/>
+<rect x="22" y="24" width="6" height="190" rx="2" fill="#C58B4E"/><rect x="80" y="24" width="6" height="190" rx="2" fill="#C58B4E"/>
+<rect x="230" y="24" width="112" height="132" rx="6" fill="#F7F1E6"/>
+<rect x="238" y="32" width="96" height="116" fill="#1F3D7A"/>
+<rect x="238" y="100" width="96" height="48" fill="#2D529A"/>
+<circle cx="316" cy="50" r="8" fill="#FFF6D6"/>
+<path d="M256 134l9-20 9 20zM259 124l6-14 6 14z" fill="#1E6B47"/>
+<circle cx="271" cy="34" r="2" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="6.6s" begin="-0.3s" repeatCount="indefinite"/><animate attributeName="cx" values="271;276;271" dur="2.6s" begin="-0.3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="6.6s" begin="-0.3s" repeatCount="indefinite"/></circle><circle cx="313" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="6.5s" begin="-0.4s" repeatCount="indefinite"/><animate attributeName="cx" values="313;318;313" dur="2.6s" begin="-0.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="6.5s" begin="-0.4s" repeatCount="indefinite"/></circle><circle cx="287" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="5.3s" begin="-2.2s" repeatCount="indefinite"/><animate attributeName="cx" values="287;292;287" dur="2.1s" begin="-2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="5.3s" begin="-2.2s" repeatCount="indefinite"/></circle><circle cx="264" cy="34" r="3" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="5.2s" begin="-3.0s" repeatCount="indefinite"/><animate attributeName="cx" values="264;269;264" dur="2.1s" begin="-3.0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="5.2s" begin="-3.0s" repeatCount="indefinite"/></circle><circle cx="324" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="7.3s" begin="-2.9s" repeatCount="indefinite"/><animate attributeName="cx" values="324;329;324" dur="2.9s" begin="-2.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="7.3s" begin="-2.9s" repeatCount="indefinite"/></circle><circle cx="326" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="7.2s" begin="-1.0s" repeatCount="indefinite"/><animate attributeName="cx" values="326;331;326" dur="2.9s" begin="-1.0s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="7.2s" begin="-1.0s" repeatCount="indefinite"/></circle><circle cx="279" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="7.3s" begin="-4.1s" repeatCount="indefinite"/><animate attributeName="cx" values="279;284;279" dur="2.9s" begin="-4.1s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="7.3s" begin="-4.1s" repeatCount="indefinite"/></circle><circle cx="301" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="7.3s" begin="-4.7s" repeatCount="indefinite"/><animate attributeName="cx" values="301;306;301" dur="2.9s" begin="-4.7s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="7.3s" begin="-4.7s" repeatCount="indefinite"/></circle><circle cx="275" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="7.3s" begin="-4.5s" repeatCount="indefinite"/><animate attributeName="cx" values="275;280;275" dur="2.9s" begin="-4.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="7.3s" begin="-4.5s" repeatCount="indefinite"/></circle><circle cx="286" cy="34" r="3" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="8.1s" begin="-3.8s" repeatCount="indefinite"/><animate attributeName="cx" values="286;291;286" dur="3.2s" begin="-3.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="8.1s" begin="-3.8s" repeatCount="indefinite"/></circle><circle cx="322" cy="34" r="2.4" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="6.2s" begin="-4.9s" repeatCount="indefinite"/><animate attributeName="cx" values="322;327;322" dur="2.5s" begin="-4.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="6.2s" begin="-4.9s" repeatCount="indefinite"/></circle><circle cx="303" cy="34" r="2" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="5.3s" begin="-1.6s" repeatCount="indefinite"/><animate attributeName="cx" values="303;308;303" dur="2.1s" begin="-1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="5.3s" begin="-1.6s" repeatCount="indefinite"/></circle><circle cx="286" cy="34" r="2.4" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="7.9s" begin="-2.3s" repeatCount="indefinite"/><animate attributeName="cx" values="286;291;286" dur="3.2s" begin="-2.3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="7.9s" begin="-2.3s" repeatCount="indefinite"/></circle><circle cx="326" cy="34" r="1.6" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="7.0s" begin="-1.2s" repeatCount="indefinite"/><animate attributeName="cx" values="326;331;326" dur="2.8s" begin="-1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="7.0s" begin="-1.2s" repeatCount="indefinite"/></circle><circle cx="273" cy="34" r="3" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="6.7s" begin="-6.4s" repeatCount="indefinite"/><animate attributeName="cx" values="273;278;273" dur="2.7s" begin="-6.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="6.7s" begin="-6.4s" repeatCount="indefinite"/></circle><circle cx="251" cy="34" r="2.4" fill="#FFFFFF"><animate attributeName="cy" values="34;146" dur="6.4s" begin="-2.2s" repeatCount="indefinite"/><animate attributeName="cx" values="251;256;251" dur="2.5s" begin="-2.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="6.4s" begin="-2.2s" repeatCount="indefinite"/></circle>
+<path d="M238 136Q260 126 284 134T334 130V148H238Z" fill="#EAF2FF"/>
+<path d="M286 32V148M238 90H334" stroke="#F7F1E6" stroke-width="5"/>
+<rect x="224" y="154" width="124" height="9" rx="3" fill="#E9DFCC"/>
+<path d="M226 154Q240 148 256 153Q276 147 296 153Q318 148 346 154Z" fill="#FFFFFF"/>
+<path d="M96 12Q171 44 246 12Q321 44 396 12" fill="none" stroke="#2E7D4F" stroke-width="3"/>
+<circle cx="96" cy="15" r="4.5" fill="#FF5A5F"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="126" cy="29" r="4.5" fill="#FFC93C"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-0.4s" repeatCount="indefinite"/></circle><circle cx="156" cy="36" r="4.5" fill="#3DDC97"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-0.8s" repeatCount="indefinite"/></circle><circle cx="186" cy="36" r="4.5" fill="#5AA9FF"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-1.2s" repeatCount="indefinite"/></circle><circle cx="216" cy="29" r="4.5" fill="#FF5A5F"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-1.6s" repeatCount="indefinite"/></circle><circle cx="246" cy="15" r="4.5" fill="#FFC93C"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-2.0s" repeatCount="indefinite"/></circle><circle cx="276" cy="29" r="4.5" fill="#3DDC97"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-2.4s" repeatCount="indefinite"/></circle><circle cx="306" cy="36" r="4.5" fill="#5AA9FF"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-2.8s" repeatCount="indefinite"/></circle><circle cx="336" cy="36" r="4.5" fill="#FF5A5F"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-3.2s" repeatCount="indefinite"/></circle><circle cx="366" cy="29" r="4.5" fill="#FFC93C"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-3.6s" repeatCount="indefinite"/></circle><circle cx="396" cy="15" r="4.5" fill="#3DDC97"><animate attributeName="opacity" values="1;.35;1" dur="1.6s" begin="-4.0s" repeatCount="indefinite"/></circle>
+<rect y="214" width="400" height="86" fill="#E3B077"/>
+<path d="M0 236H400M0 262H400M0 288H400M120 214V236M260 236V262M60 262V288M330 262V288M200 288V300" stroke="#D29A5E" stroke-width="2"/>
+<circle cx="364" cy="246" r="14" fill="#FF6B4A"/><path d="M352 240Q364 250 376 240M351 250Q364 258 377 250" stroke="#FAFCFF" stroke-width="2.5" fill="none"/>
+<rect x="74" y="258" width="252" height="12" rx="6" fill="#3C6FD1"/><rect x="74" y="258" width="252" height="4" rx="2" fill="#6D97EA"/>`;
+const ICON_PAUSE = '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1.5" fill="#132A4F"/><rect x="12" y="3" width="4" height="14" rx="1.5" fill="#132A4F"/></svg>';
+const ICON_PLAY = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3l12 7-12 7z" fill="#132A4F"/></svg>';
+const ICON_RESET = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5M4 3v4h4" fill="none" stroke="#132A4F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const stage = (counter = true) => `
+<figure class="stage">
+  <svg viewBox="0 0 400 300" role="img" aria-label="">${BACKDROP}<g class="figlayer"></g></svg>
+  ${counter ? '<div class="count"><b>0</b><span></span></div><p class="done" hidden>Молодець!</p>' : ''}
+  <div class="ctl"><button type="button" class="pp" aria-label="Пауза">${ICON_PAUSE}</button><button type="button" class="rs" aria-label="Почати спочатку">${ICON_RESET}</button></div>
+</figure>`;
+
+function wireControls(el, getFig) {
+  const pp = el.querySelector('.pp'), rs = el.querySelector('.rs');
+  const sync = () => { const f = getFig(); pp.innerHTML = f.playing ? ICON_PAUSE : ICON_PLAY; pp.setAttribute('aria-label', f.playing ? 'Пауза' : 'Грати'); };
+  pp.addEventListener('click', () => { const f = getFig(); f.playing = !f.playing; sync(); });
+  rs.addEventListener('click', () => { const f = getFig(); f.reset(); f.playing = true; sync(); });
+  return sync;
+}
+
+/* ---------- slides ---------- */
+const deck = document.getElementById('deck');
+const slides = [];
+const secCount = [0, 0, 0]; EX.forEach(e => secCount[e.sec]++);
+const firstOf = s => 1 + EX.findIndex(e => e.sec === s);
+const word = n => (n % 10 === 1 && n % 100 !== 11) ? 'вправа' : ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) ? 'вправи' : 'вправ';
+
+function addSlide(html, col, extra = {}) {
+  const el = document.createElement('section');
+  el.className = 'slide ' + (extra.cls || '');
+  el.hidden = true;
+  el.style.setProperty('--acc', col.c); el.style.setProperty('--acc-ink', col.ink);
+  el.innerHTML = html;
+  deck.appendChild(el);
+  const s = { el, col, ...extra };
+  slides.push(s);
+  return s;
+}
+
+// cover
+{
+  const s = addSlide(`
+  <div class="copy">
+    <p class="eyebrow">Фізкультура · 2–3 клас · урок удома · частина 7</p>
+    <h1>Руханка вдома 7</h1>
+    <p class="lead">${EX.length} ${word(EX.length) === 'вправ' ? 'нових' : 'нові'} ${word(EX.length)} разом з ельфиком — помічником Святого Миколая. Дивись, як він рухається, і повторюй. Наприкінці — гра «Вгадай вправу».</p>
+    <div class="plan">${SECS.map((x, i) => `<button type="button" data-go="${firstOf(i)}" style="--c:${x.c}">${x.name}<small>${secCount[i]} ${word(secCount[i])}</small></button>`).join('')}
+      <button type="button" data-go="${EX.length + 1}" style="--c:${COURT.c}">Гра<small>8 раундів</small></button></div>
+    <ul class="ready"><li>Провітри кімнату</li><li>Звільни місце навколо себе</li><li>Одягни зручний одяг, постав поруч воду</li></ul>
+    <button type="button" class="big-btn" data-go="1">Почати урок →</button>
+  </div>${stage(false)}`, COURT);
+  s.fig = new Fig(s.el.querySelector('.stage svg'), WAVE, COURT.c);
+  s.sync = wireControls(s.el, () => s.fig);
+}
+
+// exercises
+EX.forEach((ex, i) => {
+  const sec = SECS[ex.sec];
+  const s = addSlide(`
+  <div class="copy">
+    <p class="eyebrow">${sec.name} · вправа ${i + 1} з ${EX.length}</p>
+    <h1>${ex.name}</h1>
+    <div class="dose"><b>${ex.dose.n}</b><span>${ex.dose.u}</span>${ex.dose.note ? `<em>· ${ex.dose.note}</em>` : ''}</div>
+    <ol class="steps">${ex.steps.map(t => `<li>${t}</li>`).join('')}</ol>
+    <p class="tip"><b>Порада.</b> ${ex.tip}</p>
+  </div>${stage(true)}`, sec, { ex });
+  s.fig = new Fig(s.el.querySelector('.stage svg'), ex, sec.c);
+  const cb = s.el.querySelector('.count b'), cs = s.el.querySelector('.count span'), done = s.el.querySelector('.done');
+  cs.textContent = '/ ' + ex.dose.n + (ex.timed ? ' с' : '');
+  s.fig.onCount = (n, prev) => {
+    cb.textContent = Math.min(n, ex.dose.n); done.hidden = n < ex.dose.n;
+    // sound only for a real step forward while the exercise is still running
+    if (prev < 0 || n !== prev + 1 || n > ex.dose.n) return;
+    // seconds between two counts
+    const N = ex.dose.n, iv = ex.timed ? 1 : s.fig.dur * s.fig.nT / s.fig.per / 1000;
+    if (n === N) Sound.finish(n);
+    else if (ex.rev && n % ex.rev === 0) Sound.cue(n, 'turn', iv);
+    else if (ex.swap && n === ex.swap) Sound.cue(n, 'swap', iv);
+    else if (!ex.timed && n === N - 1) Sound.cue(n, 'last', iv);
+    else if (N >= 8 && n === N - 3) Sound.cue(n, 'almost', iv);
+    else if (n === Math.floor(N / 2)) Sound.praise(n, iv);
+    else Sound.count(n);
+  };
+  s.fig.reset();
+  s.sync = wireControls(s.el, () => s.fig);
+});
+
+// game
+const ROUNDS = 8;
+const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>';
+const game = addSlide(`
+  <div class="copy">
+    <p class="eyebrow">Міні-гра для дистанційного навчання</p>
+    <h1>Вгадай вправу</h1>
+    <p class="lead" id="gLead">Подивись, що робить герой, і обери правильну назву. За кожну правильну відповідь — зірочка. А потім зроби цю вправу сам 5 разів!</p>
+    <div class="stars" id="gStars" aria-label="Зірочки">${STAR.repeat(ROUNDS).replace(/<svg/g, '<span><svg').replace(/<\/svg>/g, '</svg></span>')}</div>
+    <p class="round" id="gRound">8 раундів · 3 варіанти відповіді</p>
+    <p class="fb" id="gFb" aria-live="polite"></p>
+    <div id="gMedal" hidden></div>
+    <button type="button" class="big-btn" id="gBtn">Почати гру</button>
+  </div>
+  <div class="gright">${stage(false)}<div class="opts" id="gOpts"></div></div>`, COURT, { cls: 'game' });
+{
+  const svg = game.el.querySelector('.stage svg');
+  game.fig = new Fig(svg, WAVE, COURT.c);
+  game.sync = wireControls(game.el, () => game.fig);
+  const $ = id => document.getElementById(id);
+  const stars = [...$('gStars').children];
+  let order = [], round = -1, score = 0, answered = false;
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const setFig = ex => { game.fig = new Fig(svg, ex, COURT.c); game.sync(); };
+  let best = 0; try { best = +localStorage.getItem('ruhanka7-best') || 0; } catch (e) {}
+  // one entry per exercise kind (exercises sharing a short name show up once)
+  const POOL = EX.filter((e, i) => EX.findIndex(x => (x.short || x.name) === (e.short || e.name)) === i);
+  const gname = e => e.short || e.name;
+
+  function start() {
+    order = shuffle(POOL.map((_, i) => i)).slice(0, ROUNDS);
+    round = -1; score = 0;
+    stars.forEach(s => s.classList.remove('on'));
+    $('gMedal').hidden = true; $('gLead').hidden = false;
+    nextRound();
+  }
+  function nextRound() {
+    round++;
+    if (round >= ROUNDS) return finish();
+    answered = false;
+    const ex = POOL[order[round]];
+    setFig(ex);
+    const wrong = shuffle(POOL.filter(e => e !== ex)).slice(0, 2);
+    const opts = shuffle([ex, ...wrong]);
+    $('gOpts').innerHTML = opts.map(o => `<button type="button" data-n="${POOL.indexOf(o)}">${gname(o)}</button>`).join('');
+    $('gRound').textContent = `Раунд ${round + 1} з ${ROUNDS}`;
+    $('gFb').textContent = 'Яку вправу робить герой?'; $('gFb').className = 'fb';
+    $('gBtn').hidden = true;
+  }
+  function answer(btn) {
+    if (answered) return; answered = true;
+    const ex = POOL[order[round]], ok = +btn.dataset.n === order[round];
+    [...$('gOpts').children].forEach(b => { b.disabled = true; if (+b.dataset.n === order[round]) b.classList.add('ok'); });
+    if (ok) { score++; stars[round].classList.add('on'); Sound.right(); }
+    else { btn.classList.add('no'); Sound.wrong(); }
+    $('gFb').className = 'fb ' + (ok ? 'ok' : 'no');
+    $('gFb').textContent = ok ? `Правильно! Це «${gname(ex)}». Зроби її 5 разів разом із героєм!` : `Ой! Це «${gname(ex)}». Зроби її 5 разів — і запам’ятаєш!`;
+    $('gBtn').hidden = false;
+    $('gBtn').textContent = round + 1 < ROUNDS ? 'Наступний раунд →' : 'Мій результат →';
+  }
+  function finish() {
+    setFig(CHEER);
+    Sound.medal(score >= 6);
+    if (score > best) { best = score; try { localStorage.setItem('ruhanka7-best', best); } catch (e) {} }
+    const tier = score === ROUNDS ? ['#FFC93C', 'Золота медаль! Ти — чемпіон руханки!']
+      : score >= 6 ? ['#C9D3E3', 'Срібна медаль! Майже ідеально!']
+      : score >= 4 ? ['#E0A26A', 'Бронзова медаль! Гарний результат!']
+      : ['#A9D8C4', 'Гарна спроба! Повтори вправи й зіграй ще раз.'];
+    $('gOpts').innerHTML = '';
+    $('gRound').textContent = `Твій рекорд: ${best} з ${ROUNDS}`;
+    $('gFb').className = 'fb'; $('gFb').textContent = '';
+    $('gMedal').hidden = false;
+    $('gMedal').innerHTML = `<div class="medal" style="--m:${tier[0]}"><i>${score}</i><p class="lead" style="color:var(--ink);font-weight:700">Ти вгадав ${score} з ${ROUNDS}.<br>${tier[1]}</p></div>`;
+    $('gLead').hidden = true;
+    $('gBtn').hidden = false; $('gBtn').textContent = 'Грати ще раз';
+  }
+  $('gBtn').addEventListener('click', () => (round < 0 || round >= ROUNDS) ? start() : nextRound());
+  $('gOpts').addEventListener('click', e => { const b = e.target.closest('button'); if (b) answer(b); });
+  game.enter = () => {}; // keep game state when returning
+}
+
+// finish
+{
+  const s = addSlide(`
+  <div class="copy">
+    <p class="eyebrow">Кінець уроку</p>
+    <h1>Молодці! Урок завершено</h1>
+    <p class="lead">Сьогодні ми виконали ${EX.length} ${word(EX.length).replace(/а$/, 'у')}. Натисни на будь-яку, щоб повторити ще раз.</p>
+    <div class="chips">${EX.map((e, i) => `<button type="button" data-go="${i + 1}" style="--c:${SECS[e.sec].c}">${e.name}</button>`).join('')}</div>
+    <p class="hw"><b>Домашнє завдання.</b> Обери 5 нових вправ, які сподобались найбільше, і зроби їх разом із рідними. Хто зробить більше «Скручувань» без зупинки?</p>
+  </div>${stage(false)}`, COURT, { fin: true });
+  s.fig = new Fig(s.el.querySelector('.stage svg'), CHEER, COURT.c);
+  s.sync = wireControls(s.el, () => s.fig);
+}
+
+/* ---------- navigation ---------- */
+const prog = document.getElementById('prog'), num = document.getElementById('num');
+const prevB = document.getElementById('prev'), nextB = document.getElementById('next');
+slides.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.style.setProperty('--c', s.col.c);
+  b.setAttribute('aria-label', 'Слайд ' + (i + 1) + (s.ex ? ': ' + s.ex.name : ''));
+  b.addEventListener('click', () => go(i));
+  prog.appendChild(b);
+});
+let cur = -1;
+function go(i) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  if (i === cur) return;
+  Sound.stop();
+  if (cur >= 0) slides[cur].el.hidden = true;
+  cur = i;
+  const s = slides[i];
+  s.el.hidden = false; s.el.scrollTop = 0;
+  Sound.scene(s.ex ? i : 0, !!s.ex && s.ex.sec === 2);
+  if (s !== game) { s.fig.reset(); s.fig.playing = true; s.fig.holdUntil = 0; }
+  if (s.fin) Sound.lessonEnd();
+  s.sync && s.sync();
+  [...prog.children].forEach((b, j) => { b.classList.toggle('done', j < i); b.classList.toggle('cur', j === i); });
+  num.textContent = `${i + 1} / ${slides.length}`;
+  prevB.disabled = i === 0; nextB.disabled = i === slides.length - 1;
+  try { history.replaceState(null, '', '#s' + (i + 1)); } catch (e) {}
+}
+prevB.addEventListener('click', () => go(cur - 1));
+nextB.addEventListener('click', () => go(cur + 1));
+deck.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(+b.dataset.go); });
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (['ArrowRight', 'PageDown'].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+  if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End') go(slides.length - 1);
+});
+const sndB = document.getElementById('snd');
+const ICON_SND_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#132A4F"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="#132A4F" stroke-width="2" stroke-linecap="round"/></svg>';
+const ICON_SND_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#465B7E"/><path d="M16 9l5 6M21 9l-5 6" stroke="#465B7E" stroke-width="2" stroke-linecap="round"/></svg>';
+function syncSound() {
+  sndB.innerHTML = (Sound.on ? ICON_SND_ON : ICON_SND_OFF) + `<span>${Sound.on ? 'Музика' : 'Без музики'}</span>`;
+  sndB.setAttribute('aria-pressed', Sound.on);
+  sndB.setAttribute('aria-label', Sound.on ? 'Музику увімкнено' : 'Музику вимкнено');
+}
+sndB.addEventListener('click', () => { Sound.set(!Sound.on); syncSound(); Sound.test(); });
+syncSound();
+
+let tx = null, ty = null;
+deck.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+deck.addEventListener('touchend', e => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(cur + (dx < 0 ? 1 : -1));
+  tx = null;
+});
+
+const m = /^#s(\d+)$/.exec(location.hash);
+go(m ? +m[1] - 1 : 0);
+
+let last = performance.now();
+function loop(ts) {
+  const dt = Math.max(0, Math.min(50, ts - last)); last = ts;  // the first frame may carry a timestamp older than "last"
+  const f = slides[cur] && slides[cur].fig;
+  if (f && f.playing && ts >= (f.holdUntil || 0)) { f.t += dt; f.render(); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
